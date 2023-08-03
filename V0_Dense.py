@@ -38,8 +38,17 @@ model = tf.keras.Sequential([
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Train the model
-model.fit(train_images, train_labels, epochs=60, validation_data=(test_images, test_labels))
+history =model.fit(train_images, train_labels, epochs=60, validation_data=(test_images, test_labels))
 
 # Evaluate the model on the test data
 loss, accuracy = model.evaluate(test_images, test_labels)
+plt.plot(history.history['accuracy'], label='accuracy')
+plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.ylim([0.5, 1])
+plt.legend(loc='lower right')
+plt.show()
 print(f'Test loss: {loss:.4f}, Test accuracy: {accuracy:.4f}')
+
+
