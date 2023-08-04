@@ -11,7 +11,7 @@ model_name = 'V2'
 # Note: Adapted from scikit-learn's plot_confusion_matrix()
 def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10,10,), text_size=15):
   #Create the confusion matrix
-  cm = confusion_matrix(y_true, tf.round(y_preds))
+  cm = confusion_matrix(y_true, tf.round(y_pred))
   cm_norm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
   n_classes= cm.shape[0]
 
