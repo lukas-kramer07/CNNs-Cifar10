@@ -89,7 +89,7 @@ def main():
     plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.ylim([0.5, 1])
+    plt.ylim([0.2, 1])
     plt.legend(loc='lower right')
     os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/history")
