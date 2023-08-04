@@ -86,7 +86,7 @@ plt.legend(loc='lower right')
 test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
 print(test_acc)
 model.summary()
-model.save("V2")
+model.save("models/V2")
 
 y_probs = model.predict(test_images)
 y_preds = tf.argmax(y_probs, axis=1)
