@@ -17,7 +17,7 @@ model.add(layers.Conv2D(128, (3, 3), activation='relu'))
 model.add(layers.Flatten())
 model.add(layers.Dense(64, activation='relu'))
 model.add(layers.Dense(32, activation='relu'))
-model.add(layers.Dense(10))
+model.add(layers.Dense(10, activation='softmax'))
 
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),

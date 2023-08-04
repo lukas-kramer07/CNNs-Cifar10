@@ -68,7 +68,7 @@ model.add(layers.Flatten())
 model.add(layers.Dense(64, activation='relu'))
 model.add(layers.Dropout(0.3))
 model.add(layers.Dense(64, activation='relu'))
-model.add(layers.Dense(10))
+model.add(layers.Dense(10, activation='softmax'))
 
 model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),

@@ -22,16 +22,18 @@ train_labels = utils.to_categorical(train_labels, num_classes)
 test_labels = utils.to_categorical(test_labels, num_classes)
 
 # Define the CNN model
-model = models.Sequential([
-    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)),
-    layers.MaxPooling2D((2, 2)),
-    layers.Conv2D(64, (3, 3), activation='relu'),
-    layers.MaxPooling2D((2, 2)),
-    layers.Conv2D(128, (3, 3), activation='relu'),
-    layers.Flatten(),
-    layers.Dense(64, activation='relu'),
-    layers.Dense(num_classes, activation='softmax')
-])
+model = models.Sequential()
+model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Dropout(0.3))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+model.add(layers.Flatten())
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dropout(0.3))
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(10))
 
 # Compile the model with a lower learning rate
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
@@ -40,7 +42,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
 
 # Train the model
 epochs = 20
-batch_size = 64
+batch_size = 32
 model.fit(train_images, train_labels, epochs=epochs, batch_size=batch_size, validation_split=0.1)
 
 # Evaluate the model on the test set
