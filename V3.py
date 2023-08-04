@@ -78,6 +78,9 @@ def main():
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(10, activation='softmax'))
 
+    model.compile(optimizer='adam',
+                    loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                    metrics=['accuracy'])
     # Compile the model with a lower learning rate
     history = model.fit(train_images, train_labels, epochs=15, 
                       validation_data=(test_images, test_labels))
