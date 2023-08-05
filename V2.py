@@ -73,7 +73,7 @@ def main():
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                 metrics=['accuracy'])
 
-  history = model.fit(train_images, train_labels, epochs=15, 
+  history = model.fit(train_images, train_labels, epochs=20, 
                       validation_data=(test_images, test_labels))
 
   plt.plot(history.history['accuracy'], label='accuracy')
