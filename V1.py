@@ -70,7 +70,7 @@ def main():
     model.add(layers.Dense(10, activation='softmax'))
 
     model.compile(optimizer='adam',
-                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                 metrics=['accuracy'])
 
     history = model.fit(train_images, train_labels, epochs=20, 
