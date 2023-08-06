@@ -3,7 +3,6 @@
 '''
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
-import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -54,37 +53,12 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10,10,), text_s
             color="white" if cm[i, j] > threshold else "black",
             size=text_size)
 
-
-def augment(image, label):
-
-  if tf.random.uniform((), minval=0, maxval=1)<0.1:
-    image = tf.image.rgb_to_grayscale(image)
-    image = tf.tile(image, [1,1,3])
-  image = tf.image.random_brightness(image, max_delta=0.1)
-  image = tf.image.random_contrast(image, lower=0.1, upper=0.21)
-  image = tf.image.random_flip_left_right(image)
-
-  return image, label
-def normalize_image(image, label):
-  return tf.cast(image, tf.float32) / 255., label
 def main():
-  (ds_train, ds_test), ds_info =tfds.load(
-    "cifar10",
-    split=['train', 'test[:80%]'],
-    shuffle_files=True,
-    as_supervised=True,
-    with_info=True
-  )
+  (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
   class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
   # Normalize pixel values to be between 0 and 1
-  ds_train = ds_train.map(normalize_image)
-  ds_train = ds_train.map(augment)
-  ds_test =  ds_test.map(normalize_image)
-  # Add batch dimension to the dataset
-  batch_size = 32  # Adjust the batch size as needed
-  ds_train = ds_train.batch(batch_size)
-  ds_test = ds_test.batch(batch_size)
-  
+  train_images, test_images = train_images / 255.0, test_images / 255.0
+
   model = models.Sequential()
   model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)))
   model.add(layers.MaxPooling2D((2, 2)))
@@ -102,8 +76,8 @@ def main():
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                 metrics=['accuracy'])
 
-  history = model.fit(ds_train, epochs=20, 
-                      validation_data=ds_test)
+  history = model.fit(train_images, train_labels, epochs=20, 
+                      validation_data=(test_images, test_labels))
 
   plt.plot(history.history['accuracy'], label='accuracy')
   plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
