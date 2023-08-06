@@ -2,7 +2,8 @@
   uses further data augmentation than V3 and V2 model architecture. The data augmentation is applied before training
 '''
 import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import layers, models
+import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -64,14 +65,22 @@ def augment(image, label):
   image = tf.image.random_flip_left_right(image)
 
   return image, label
-
+def normalize(image,label):
+  return tf.cast(image,tf.float32)/255, label
 def main():
-  (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+  (ds_train, ds_test), ds_info =tfds.load(
+    "cifar10",
+    split=["test","train"],
+    shuffle_files=True,
+    with_info=True
+  )
   class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
   # Normalize pixel values to be between 0 and 1
-  train_images, test_images = train_images / 255.0, test_images / 255.0
-  train_images = train_images.map(augment)
+  ds_train, ds_test = ds_train.map(normalize), ds_test.map(normalize)
+  ds_train = ds_train.map(augment)
 
+  test_images = np.concatenate([y for x, y in ds_test], axis=0)
+  test_labels = np.concatenate([x for x, y in ds_test], axis=0)
   model = models.Sequential()
   model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)))
   model.add(layers.MaxPooling2D((2, 2)))
@@ -89,8 +98,8 @@ def main():
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                 metrics=['accuracy'])
 
-  history = model.fit(train_images, train_labels, epochs=20, 
-                      validation_data=(test_images, test_labels))
+  history = model.fit(ds_train, epochs=20, 
+                      validation_data=ds_test)
 
   plt.plot(history.history['accuracy'], label='accuracy')
   plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
