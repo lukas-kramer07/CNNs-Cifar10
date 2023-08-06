@@ -2,7 +2,7 @@
   uses further data augmentation than V3 and V2 model architecture. The data augmentation is applied before training
 '''
 import tensorflow as tf
-from tensorflow.keras import layers, models
+from tensorflow.keras import datasets, layers, models
 import tensorflow_datasets as tfds
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,22 +65,26 @@ def augment(image, label):
   image = tf.image.random_flip_left_right(image)
 
   return image, label
-def normalize(image,label):
-  return tf.cast(image,tf.float32)/255, label
+def normalize_image(image, label):
+  return tf.cast(image, tf.float32) / 255., label
 def main():
   (ds_train, ds_test), ds_info =tfds.load(
     "cifar10",
-    split=["test","train"],
+    split=['train', 'test[:80%]'],
     shuffle_files=True,
+    as_supervised=True,
     with_info=True
   )
   class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
   # Normalize pixel values to be between 0 and 1
-  ds_train, ds_test = ds_train.map(normalize), ds_test.map(normalize)
+  ds_train = ds_train.map(normalize_image)
   ds_train = ds_train.map(augment)
-
-  test_images = np.concatenate([y for x, y in ds_test], axis=0)
-  test_labels = np.concatenate([x for x, y in ds_test], axis=0)
+  ds_test =  ds_test.map(normalize_image)
+  # Add batch dimension to the dataset
+  batch_size = 32  # Adjust the batch size as needed
+  ds_train = ds_train.batch(batch_size)
+  ds_test = ds_test.batch(batch_size)
+  
   model = models.Sequential()
   model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)))
   model.add(layers.MaxPooling2D((2, 2)))
@@ -110,6 +114,8 @@ def main():
   os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
   plt.savefig(f"plots/{model_name}/history")
 
+  (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+  train_images, test_images = train_images / 255.0, test_images / 255.0
   y_probs = model.predict(test_images)
   y_preds = tf.argmax(y_probs, axis=1)
   make_confusion_matrix(y_true=test_labels,
