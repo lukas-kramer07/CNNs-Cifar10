@@ -1,5 +1,5 @@
 '''
-  uses further data augmentation than V3 and V2 model architecture
+  uses further data augmentation than V3 and V2 model architecture. The data augmentation is applied before training
 '''
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
@@ -53,11 +53,24 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10,10,), text_s
             color="white" if cm[i, j] > threshold else "black",
             size=text_size)
 
+
+def augment(image, label):
+
+  if tf.random.uniform((), minval=0, maxval=1)<0.1:
+    image = tf.image.rgb_to_grayscale(image)
+    image = tf.tile(image, [1,1,3])
+  image = tf.image.random_brightness(image, max_delta=0.1)
+  image = tf.image.random_contrast(image, lower=0.1, upper=0.21)
+  image = tf.image.random_flip_left_right(image)
+
+  return image, label
+
 def main():
   (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
   class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
   # Normalize pixel values to be between 0 and 1
   train_images, test_images = train_images / 255.0, test_images / 255.0
+  train_images = train_images.map(augment)
 
   model = models.Sequential()
   model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)))
