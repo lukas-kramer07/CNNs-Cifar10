@@ -1,19 +1,31 @@
+import tensorflow as tf
+import tensorflow_datasets as tfds
+import matplotlib.pyplot as plt
 import numpy as np
-import timeit
 
-arr1 = np.random.random(100000)
-arr2 = np.random.random(100000)
+def augment(image, label):
 
-def convolve_arrays():
-    return np.convolve(arr1, arr2)
+  if tf.random.uniform((), minval=0, maxval=1)<0.1:
+    image = tf.image.rgb_to_grayscale(image)
+    image = tf.tile(image, [1,1,3])
+  image = tf.image.random_brightness(image, max_delta=0.1)
+  image = tf.image.random_contrast(image, lower=0.1, upper=0.21)
+  image = tf.image.random_flip_left_right(image)
 
-time_taken = timeit.timeit(convolve_arrays, number=1)
-print(f"Time taken: {time_taken:.6f} seconds")
+  return image, label
+def normalize_image(image, label):
+  return tf.cast(image, tf.float32) / 255., label
 
-from scipy import signal
-
-def convolve_faster():
-    return signal.fftconvolve(arr1,arr2)
-
-time_taken = timeit.timeit(convolve_faster, number=1) *1000
-print(f"Time taken: {time_taken:.6f} milliseconds")
+(ds_train, ds_test), ds_info =tfds.load(
+    "cifar10",
+    split=["test","train"],
+    shuffle_files=True,
+    as_supervised=True,
+    with_info=True
+)
+class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
+# Normalize pixel values to be between 0 and 1
+ds_train = ds_train.map(normalize_image)
+ds_train = ds_train.map(augment)
+ds_test =  ds_test.map(normalize_image)
+# Display the first image from the test set
