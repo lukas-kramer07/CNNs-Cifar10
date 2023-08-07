@@ -4,7 +4,6 @@
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from keras.utils import to_categorical
 import os
 import utils
@@ -34,20 +33,13 @@ def main():
     # Create a data generator with data augmentation
     train_labels_hot = to_categorical(train_labels, 10)
     test_labels_hot = to_categorical(test_labels, 10)
-    train_datagen = ImageDataGenerator(
-        #preprocessing_function=utils.augment,
-        rotation_range=5,
-        #zoom_range=[0.8, 1.2],
-        #shear_range=0.2,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-    )
-    train_datagen.fit(train_images)
+
+    datagen = utils.create_data_augmenter(train_images)
     model = create_model()
     model.compile(optimizer='adam',
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
-    history = model.fit(train_datagen.flow(train_images, train_labels_hot, batch_size=32), epochs=20,
+    history = model.fit(datagen.flow(train_images, train_labels_hot, batch_size=32), epochs=20,
                         validation_data=(test_images, test_labels_hot))
 
     plt.plot(history.history['accuracy'], label='accuracy')

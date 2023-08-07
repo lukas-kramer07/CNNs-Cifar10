@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def augment(image):
     # Random rotation (up to 15 degrees)
@@ -33,3 +34,9 @@ def augment(image):
     image = tf.clip_by_value(image, 0.0, 1.0)
 
     return image
+def create_data_augmenter(train_images):
+    train_datagen = ImageDataGenerator(
+            preprocessing_function=augment,
+        )
+    train_datagen.fit(train_images)
+    return train_datagen
