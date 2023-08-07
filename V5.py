@@ -30,16 +30,16 @@ def main():
     class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
     # Normalize pixel values to be between 0 and 1
     train_images, test_images = train_images / 255.0, test_images / 255.0
-    # Create a data generator with data augmentation
+    # One_hot encode the labels
     train_labels_hot = to_categorical(train_labels, 10)
     test_labels_hot = to_categorical(test_labels, 10)
 
-    datagen = utils.create_data_augmenter(train_images)
+    data_augmenter = utils.create_data_augmenter(train_images)
     model = create_model()
     model.compile(optimizer='adam',
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
-    history = model.fit(datagen.flow(train_images, train_labels_hot, batch_size=32), epochs=20,
+    history = model.fit(data_augmenter.flow(train_images, train_labels_hot, batch_size=32), epochs=20,
                         validation_data=(test_images, test_labels_hot))
 
     plt.plot(history.history['accuracy'], label='accuracy')

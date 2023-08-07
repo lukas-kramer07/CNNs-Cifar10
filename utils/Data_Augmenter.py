@@ -1,42 +1,23 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import numpy as np
 
-def augment(image):
-    # Random rotation (up to 15 degrees)
-    image = tf.keras.preprocessing.image.random_rotation(image, 15, row_axis=0, col_axis=1, channel_axis=2)
+def add_noise(image):
+    noise = np.random.normal(loc=0, scale=0.02, size=image.shape)
+    noisy_image = image + noise
+    return np.clip(noisy_image, 0, 1)
 
-    # Random zoom (up to 20%)
-    zoom_range = (0.8, 1.2)
-    image = tf.keras.preprocessing.image.random_zoom(image, zoom_range, row_axis=0, col_axis=1, channel_axis=2)
 
-    # Random shear (up to 20 degrees)
-    shear_range = 0.2
-    image = tf.keras.preprocessing.image.random_shear(image, shear_range, row_axis=0, col_axis=1, channel_axis=2)
-
-    # Random shift (up to 10%)
-    width_shift_range = 0.1
-    height_shift_range = 0.1
-    image = tf.keras.preprocessing.image.random_shift(image, width_shift_range, height_shift_range,
-                                                      row_axis=0, col_axis=1, channel_axis=2)
-
-    # Random flip (horizontal and vertical)
-    image = tf.image.random_flip_left_right(image)
-    # Random brightness adjustment
-    image = tf.image.random_brightness(image, max_delta=0.2)
-
-    # Random contrast adjustment
-    image = tf.image.random_contrast(image, lower=0.8, upper=1.2)
-
-    # Random saturation adjustment
-    image = tf.image.random_saturation(image, lower=0.8, upper=1.2)
-
-    # Clip pixel values to [0, 1] range
-    image = tf.clip_by_value(image, 0.0, 1.0)
-
-    return image
 def create_data_augmenter(train_images):
-    train_datagen = ImageDataGenerator(
-            preprocessing_function=augment,
-        )
-    train_datagen.fit(train_images)
-    return train_datagen
+    # Create an instance of the ImageDataGenerator class for data augmentation
+    data_augmenter = ImageDataGenerator(
+        rotation_range=10,  # rotate the image up to 10 degrees
+        width_shift_range=0.05,  
+        height_shift_range=0.05,  
+        horizontal_flip=True,  # flip the image horizontally
+        vertical_flip=False,  # do not flip the image vertically
+        zoom_range=0.05,  # zoom in/out up to 5%
+        fill_mode='nearest',  # fill gaps in the image with the nearest pixel
+        preprocessing_function=add_noise  # Add the add_noise function as the preprocessing function
+)
+    return data_augmenter
