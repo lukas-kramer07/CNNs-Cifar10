@@ -8,6 +8,7 @@ import numpy as np
 import os
 import itertools
 from sklearn.metrics import confusion_matrix
+import utils
 model_name = 'V4'
 # Create a confusion matrix
 # Note: Adapted from scikit-learn's plot_confusion_matrix()
@@ -58,6 +59,11 @@ def main():
   class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
   # Normalize pixel values to be between 0 and 1
   train_images, test_images = train_images / 255.0, test_images / 255.0
+  train_images_augmented = train_images
+  for i in range(len(train_images_augmented)):  
+    train_images_augmented[i] = utils.augment(train_images_augmented[i])   
+  train_images = np.concatenate((train_images, train_images_augmented), axis=0)
+  train_labels = np.concatenate((train_labels, train_labels), axis=0)
 
   model = models.Sequential()
   model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)))
