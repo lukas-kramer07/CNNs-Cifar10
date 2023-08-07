@@ -69,7 +69,7 @@ def main():
     os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/confusion_matrix")
 
-    test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
+    test_loss, test_acc = model.evaluate(test_images,  test_labels_hot, verbose=1)
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
     os.makedirs(f"models", exist_ok=True)  # Create the "models" folder if it doesn't exist
