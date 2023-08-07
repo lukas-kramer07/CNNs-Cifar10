@@ -6,23 +6,10 @@ from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import itertools
-from sklearn.metrics import confusion_matrix
 import utils
 model_name = 'V4'
-# Create a confusion matrix
-# Note: Adapted from scikit-learn's plot_confusion_matrix()
-def main():
-  (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
-  class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
-  # Normalize pixel values to be between 0 and 1
-  train_images, test_images = train_images / 255.0, test_images / 255.0
-  train_images_augmented = train_images
-  for i in range(len(train_images_augmented)):  
-    train_images_augmented[i] = utils.augment(train_images_augmented[i])   
-  train_images = np.concatenate((train_images, train_images_augmented), axis=0)
-  train_labels = np.concatenate((train_labels, train_labels), axis=0)
 
+def create_model(): 
   model = models.Sequential()
   model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)))
   model.add(layers.MaxPooling2D((2, 2)))
@@ -36,6 +23,21 @@ def main():
   model.add(layers.Dense(32, activation='relu'))
   model.add(layers.Dense(10, activation='softmax'))
 
+  return model
+
+def main():
+  (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
+  class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
+  # Normalize pixel values to be between 0 and 1
+  train_images, test_images = train_images / 255.0, test_images / 255.0
+  # Augment the training data
+  train_images_augmented = []
+  for image in train_images:
+      augmented_image = utils.augment(image)
+      train_images_augmented.append(augmented_image)
+  train_images_augmented = np.array(train_images_augmented)
+
+  model = create_model()
   model.compile(optimizer='adam',
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
                 metrics=['accuracy'])
@@ -52,8 +54,6 @@ def main():
   os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
   plt.savefig(f"plots/{model_name}/history")
 
-  (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
-  train_images, test_images = train_images / 255.0, test_images / 255.0
   y_probs = model.predict(test_images)
   y_preds = tf.argmax(y_probs, axis=1)
   utils.make_confusion_matrix(y_true=test_labels,
