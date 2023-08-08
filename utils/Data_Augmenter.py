@@ -2,8 +2,14 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 
-def add_noise(image):
-    noise = np.random.normal(loc=0, scale=0.02, size=image.shape)
+def augment(image):
+    if tf.random.uniform((), minval=0, maxval=1)<0.1:
+        image = tf.image.rgb_to_grayscale(image)
+        image = tf.tile(image, [1,1,3])
+    image = tf.image.random_brightness(image, max_delta=0.25)
+    image = tf.image.random_contrast(image, lower=0.85, upper=1)
+    image = tf.image.random_flip_left_right(image)
+    noise = np.random.normal(loc=0, scale=0.015, size=image.shape)
     noisy_image = image + noise
     return np.clip(noisy_image, 0, 1)
 
@@ -11,13 +17,10 @@ def add_noise(image):
 def create_data_augmenter(train_images):
     # Create an instance of the ImageDataGenerator class for data augmentation
     data_augmenter = ImageDataGenerator(
-        rotation_range=10,  # rotate the image up to 10 degrees
+        rotation_range=8,  # rotate the image up to 8 degrees
         width_shift_range=0.05,  
         height_shift_range=0.05,  
-        horizontal_flip=True,  # flip the image horizontally
-        vertical_flip=False,  # do not flip the image vertically
-        zoom_range=0.05,  # zoom in/out up to 5%
-        fill_mode='nearest',  # fill gaps in the image with the nearest pixel
-        preprocessing_function=add_noise  # Add the add_noise function as the preprocessing function
+        zoom_range=0.1,  # zoom in/out up to 10%
+        preprocessing_function=augment  # Add the augment function as the preprocessing function
 )
     return data_augmenter
