@@ -10,24 +10,44 @@ import utils
 model_name = 'V6'
 
 def create_model(): 
-  model = models.Sequential()
-  model.add(layers.Conv2D(32, (4, 4), activation='relu', padding='same', input_shape=(32, 32, 3)))
-  model.add(layers.MaxPooling2D((2, 2)))
-  model.add(layers.Conv2D(64, (4, 4), activation='relu', padding='same'))
-  model.add(layers.MaxPooling2D((2, 2)))
-  model.add(layers.Conv2D(64, (4, 4), activation='relu', padding='same'))
-  model.add(layers.Conv2D(128, (3, 3), activation='relu', padding='same'))
-  model.add(layers.Conv2D(128, (3, 3), activation='relu', padding='same'))
-  model.add(layers.Flatten())
-  model.add(layers.Dense(128, activation='relu'))
-  model.add(layers.Dropout(0.1))
-  model.add(layers.Dense(64, activation='relu'))
-  model.add(layers.Dense(128, activation='relu'))
-  model.add(layers.Dropout(0.1))
-  model.add(layers.Dense(32, activation='relu'))
-  model.add(layers.Dense(10, activation='softmax'))
+    model = models.Sequential()
 
-  return model
+    # First convolutional block
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(32, 32, 3)))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.25))
+
+    # Second convolutional block
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.25))
+
+    # Third convolutional block
+    model.add(layers.Conv2D(128, (3, 3), activation='relu', padding='same'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Conv2D(128, (3, 3), activation='relu', padding='same'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.25))
+
+    # Fully connected layers
+    model.add(layers.Flatten())
+    model.add(layers.Dense(256, activation='relu'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(128, activation='relu'))
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(10, activation='softmax'))
+
+
+    return model
 
 def main():
     (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
