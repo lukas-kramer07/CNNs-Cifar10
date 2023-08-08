@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import LearningRateScheduler
 model_name = 'V7'
 
 def scheduler(epochs,lr):
-    return lr * (1/3) if epochs % 5 == 0 and epochs > 5 else lr
+    return lr * (1/4) if epochs % 7 == 0 and epochs > 7 else lr
 
 def main():
     (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
@@ -32,18 +32,45 @@ def main():
     # Define the learning rate scheduler callback
     lr_scheduler = LearningRateScheduler(scheduler)
 
-    history = model.fit(data_augmenter.flow(train_images, train_labels_hot, batch_size=32), epochs=5,
+    history = model.fit(data_augmenter.flow(train_images, train_labels_hot, batch_size=32), epochs=52,
                         callbacks=[lr_scheduler],
                         validation_data=(test_images, test_labels_hot))
 
-    plt.plot(history.history['accuracy'], label='accuracy')
-    plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+    # Calculate the change in accuracy from the previous epoch
+    accuracy_changes = [0] + [history.history['accuracy'][i] - history.history['accuracy'][i-1] for i in range(1, len(history.history['accuracy']))]
+
+    plt.figure(figsize=(10, 6))
+
+    # Plot accuracy and validation accuracy
+    accuracy_line, = plt.plot(history.history['accuracy'], label='accuracy', color='b')
+    val_accuracy_line, = plt.plot(history.history['val_accuracy'], label='val_accuracy', color='g')
+
+    # Plot change in accuracy
+    accuracy_change_line, = plt.plot(accuracy_changes, label='Accuracy Change', color='r', linestyle='dashed')
+
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.ylim([0.5, 1])
-    plt.legend(loc='lower right')
-    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
-    plt.savefig(f"plots/{model_name}/history")
+    plt.ylim([0, 1.1])
+
+    # Create a twin axis for the learning rate
+    ax2 = plt.gca().twinx()
+    lr_line, = ax2.plot(history.history['lr'], label='Learning Rate', color='m', linestyle='dotted')
+    ax2.set_ylabel('Learning Rate')
+
+    # Combine the legend entries from both axes
+    lines = [accuracy_line, val_accuracy_line, accuracy_change_line, lr_line]
+    labels = [line.get_label() for line in lines]
+    plt.legend(lines, labels, loc='upper left')
+
+    plt.title('Accuracy, Validation Accuracy, Accuracy Change, and Learning Rate')
+    plt.tight_layout()
+
+    # Create the "plots" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)
+
+    plt.savefig(f"plots/{model_name}/history_with_lr_and_change.png")
+
+
 
     y_probs = model.predict(test_images)
     y_preds = tf.argmax(y_probs, axis=1)
@@ -63,4 +90,4 @@ def main():
 
 if __name__ == "__main__":
   main()
-  plt.show()
+  plt.show()    
