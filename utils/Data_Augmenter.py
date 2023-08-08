@@ -9,7 +9,7 @@ def augment(image):
     image = tf.image.random_brightness(image, max_delta=0.25)
     image = tf.image.random_contrast(image, lower=0.85, upper=1)
     image = tf.image.random_flip_left_right(image)
-    noise = np.random.normal(loc=0, scale=0.015, size=image.shape)
+    noise = np.random.normal(loc=0, scale=0.018, size=image.shape)
     noisy_image = image + noise
     return np.clip(noisy_image, 0, 1)
 
@@ -17,7 +17,7 @@ def augment(image):
 def create_data_augmenter(train_images):
     # Create an instance of the ImageDataGenerator class for data augmentation
     data_augmenter = ImageDataGenerator(
-        rotation_range=8,  # rotate the image up to 8 degrees
+        rotation_range=9,  # rotate the image up to 8 degrees
         width_shift_range=0.05,  
         height_shift_range=0.05,  
         zoom_range=0.1,  # zoom in/out up to 10%
