@@ -1,3 +1,6 @@
+'''
+makes a confusion-matrix based on the models predictions in crossreference to the true labels
+'''
 import matplotlib.pyplot as plt
 import itertools
 from sklearn.metrics import confusion_matrix
