@@ -1,5 +1,5 @@
 '''
-  uses data augmentation and V2 model architecture
+  uses data augmentation and V2 model architecture. The data augmentation is applied before training
 '''
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
