@@ -1,5 +1,5 @@
 '''
-  uses further data augmentation than V3 and V2 model architecture. The data augmentation is applied before training
+  uses further data augmentation than V34 and V2 model architecture. The data augmentation is applied during training
 '''
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models

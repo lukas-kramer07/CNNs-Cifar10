@@ -1,5 +1,5 @@
 '''
-  uses V6 data augmentation and V6 model, but also a callbacker
+  uses V6 data augmentation and V6 model as well as a callbacker to progressively reduce lr
 '''
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
