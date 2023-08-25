@@ -1,3 +1,6 @@
+'''
+Data-Augmenter: It adjusts brightness, contrast, rotation, widht- and height-shift, and zoom. It also adds noise and changes some images to grayscale
+'''
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
