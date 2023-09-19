@@ -32,7 +32,7 @@ def main():
     # Define the learning rate scheduler callback
     lr_scheduler = LearningRateScheduler(scheduler)
 
-    history = model.fit(data_augmenter.flow(train_images, train_labels_hot, batch_size=32), epochs=52,
+    history = model.fit(data_augmenter.flow(train_images, train_labels_hot, batch_size=32), epochs=3,
                         callbacks=[lr_scheduler],
                         validation_data=(test_images, test_labels_hot))
 
