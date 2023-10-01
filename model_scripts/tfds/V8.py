@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from keras.utils import to_categorical
 import os
 import utils
-from V6 import create_model
+from model-scripts.keras create_model
 from tensorflow.keras.callbacks import LearningRateScheduler
 model_name = 'V7'
 
