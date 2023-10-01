@@ -1,5 +1,5 @@
 '''
-  uses V6 data augmentation and V6 model. Introduces futher callbacks from V7. From now on tfds will be used
+  uses V6 model and tfds instead of keras.datasets. All subsequent models will use tfds
 '''
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
