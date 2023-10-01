@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from keras.utils import to_categorical
 import os
 import utils
-from model-scripts.keras create_model
+from model_scripts.keras_datasets.V6 create_model
 from tensorflow.keras.callbacks import LearningRateScheduler
 model_name = 'V7'
 
@@ -81,8 +81,8 @@ def model_eval(model):
     test_loss, test_acc = model.evaluate(test_images,  test_labels_hot, verbose=1)
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
-    os.makedirs(f"model - checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
-    model.save(f"model - checkpoints/{model_name}")
+    os.makedirs(f"model_checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
+    model.save(f"model_checkpoints/{model_name}")
 
 
 if __name__ == "__main__":
