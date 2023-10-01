@@ -9,24 +9,27 @@ import os
 import utils
 model_name = 'V2'
 
+def create_model():
+    model = models.Sequential()
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same',  input_shape=(32, 32, 3)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu',padding='same'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu',padding='same'))
+    model.add(layers.Conv2D(128, (3, 3), activation='relu',padding='same'))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(32, activation='relu'))
+    model.add(layers.Dense(10, activation='softmax'))
+    return model
 def main():
   (train_images, train_labels), (test_images, test_labels) = datasets.cifar10.load_data()
   class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
   # Normalize pixel values to be between 0 and 1
   train_images, test_images = train_images / 255.0, test_images / 255.0
+  model = create_model()
 
-  model = models.Sequential()
-  model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same',  input_shape=(32, 32, 3)))
-  model.add(layers.MaxPooling2D((2, 2)))
-  model.add(layers.Conv2D(64, (3, 3), activation='relu',padding='same'))
-  model.add(layers.MaxPooling2D((2, 2)))
-  model.add(layers.Conv2D(64, (3, 3), activation='relu',padding='same'))
-  model.add(layers.Conv2D(128, (3, 3), activation='relu',padding='same'))
-  model.add(layers.Flatten())
-  model.add(layers.Dense(64, activation='relu'))
-  model.add(layers.Dense(64, activation='relu'))
-  model.add(layers.Dense(32, activation='relu'))
-  model.add(layers.Dense(10, activation='softmax'))
 
   model.compile(optimizer='adam',
                 loss=tf.keras.losses.SparseCategoricalCrossentropy(),
