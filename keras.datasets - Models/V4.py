@@ -67,8 +67,8 @@ def main():
   test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose=2)
   print(f"test_acc: {test_acc}; test_loss: {test_loss}")
   model.summary()
-  os.makedirs(f"models", exist_ok=True)  # Create the "models" folder if it doesn't exist
-  model.save(f"models/{model_name}")
+  os.makedirs(f"model - checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
+  model.save(f"model - checkpoints/{model_name}")
 
 if __name__ == "__main__":
   main()
