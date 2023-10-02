@@ -11,7 +11,7 @@ from sklearn.metrics import confusion_matrix
 model_name = 'V0_Dense'
 # Create a confusion matrix
 # Note: Adapted from scikit-learn's plot_confusion_matrix()
-def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10,10,), text_size=15):
+def make_confusion_matrix(y_true, y_pred,model_name, classes=None, figsize=(10,10,), text_size=15):
   #Create the confusion matrix
   cm = confusion_matrix(y_true, tf.round(y_pred))
   cm_norm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
@@ -26,7 +26,7 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10,10,), text_s
 #set labels to be classes
   labels = classes if classes else np.arange(cm.shape[0])
   # Label the axes
-  ax.set(title="Confusion matrix - Fashion_modelV1",
+  ax.set(title=f"Confusion matrix - Fashion_model{model_name}",
         xlabel="Predicted label",
         ylabel="True label",
         xticks=np.arange(n_classes),
