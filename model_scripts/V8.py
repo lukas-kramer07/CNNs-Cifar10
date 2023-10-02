@@ -1,38 +1,27 @@
 '''
-  uses V6 model and tfds instead of keras.datasets. All subsequent models will use tfds
+  uses V2 model and tfds instead of keras.datasets. All subsequent models will use tfds
 '''
-import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
-import matplotlib.pyplot as plt
-from keras.utils import to_categorical
 import os
-import utils
-from model_scripts.keras_datasets.V6 create_model
-from tensorflow.keras.callbacks import LearningRateScheduler
+from . import utils
+
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import tensorflow_datasets as tfds
 model_name = 'V7'
 
-def scheduler(epochs,lr):
-    return lr * (1/4) if epochs % 7 == 0 and epochs > 7 else lr
-
 def main():
-    
+    train_ds, test_ds, ds_info = tfds.load(name='cifar-10', split=['train', 'test[90%]'], with_info=True)
+    print(ds_info)
 
-    data_augmenter = utils.create_data_augmenter(train_images)
-    model = create_model()
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-                loss=tf.keras.losses.CategoricalCrossentropy(),
-                metrics=['accuracy'])
+    #model = create_model()
+    #model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    #            loss=tf.keras.losses.CategoricalCrossentropy(),
+    #            metrics=['accuracy'])
     
-    # Define the learning rate scheduler callback
-    lr_scheduler = LearningRateScheduler(scheduler)
-
-    history = model.fit(data_augmenter.flow(train_images, train_labels_hot, batch_size=32), epochs=3,
-                        callbacks=[lr_scheduler],
-                        validation_data=(test_images, test_labels_hot))
 
     
 
-def model_eval(model):
+def model_eval(model, history, test_ds):
     '''# Calculate the change in accuracy from the previous epoch
     accuracy_changes = [0] + [history.history['accuracy'][i] - history.history['accuracy'][i-1] for i in range(1, len(history.history['accuracy']))]
 
@@ -65,11 +54,10 @@ def model_eval(model):
     # Create the "plots" folder if it doesn't exist
     os.makedirs(f"plots/{model_name}", exist_ok=True)
 
-    plt.savefig(f"plots/{model_name}/history_with_lr_and_change.png")''' -> move to utils
+    plt.savefig(f"plots/{model_name}/history_with_lr_and_change.png")''' #-> move to utils
 
 
-
-    y_probs = model.predict(test_images)
+    '''y_probs = model.predict(test_images)
     y_preds = tf.argmax(y_probs, axis=1)
     utils.make_confusion_matrix(y_true=test_labels,
                         y_pred=y_preds,
@@ -82,7 +70,7 @@ def model_eval(model):
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
     os.makedirs(f"model_checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
-    model.save(f"model_checkpoints/{model_name}")
+    model.save(f"model_checkpoints/{model_name}")''' #-> repair this
 
 
 if __name__ == "__main__":
