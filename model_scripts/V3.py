@@ -59,7 +59,8 @@ def main():
                             y_pred=y_preds,
                             classes=class_names,
                             figsize=(13,13),
-                            text_size=8)
+                            text_size=8,
+                            model_name=model_name)
     os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/confusion_matrix")
     
