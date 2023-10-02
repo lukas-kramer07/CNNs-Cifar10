@@ -2,7 +2,7 @@
   uses V2 model and tfds instead of keras.datasets. All subsequent models will use tfds
 '''
 import os
-from . import utils
+import utils
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
