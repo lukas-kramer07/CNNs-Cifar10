@@ -94,4 +94,4 @@ def main():
 
 if __name__ == "__main__":
   main()
-  plt.show()
+  #plt.show()
