@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import itertools
 from sklearn.metrics import confusion_matrix
 import numpy as np
-def make_confusion_matrix(y_true, y_pred,model_name, classes=None, figsize=(10,10,), text_size=15):
+def make_confusion_matrix(y_true, y_pred, model_name, classes=None, figsize=(10,10,), text_size=15):
   #Create the confusion matrix
   cm = confusion_matrix(y_true, np.round(y_pred))
   cm_norm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
