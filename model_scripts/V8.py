@@ -3,16 +3,15 @@
 '''
 import os
 import utils
-
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import tensorflow_datasets as tfds
-model_name = 'V7'
+model_name = 'V8'
 
 def main():
-    train_ds, test_ds, ds_info = tfds.load(name='cifar-10', split=['train', 'test[90%]'], with_info=True)
-    print(ds_info)
-
+    #load dataset
+    train_ds, test_ds, ds_info = tfds.load('cifar10', split=['train','test'], as_supervised=True)
+  
     #model = create_model()
     #model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
     #            loss=tf.keras.losses.CategoricalCrossentropy(),
@@ -74,6 +73,6 @@ def model_eval(model, history, test_ds):
     model.save(f"model_checkpoints/{model_name}")''' #-> repair this
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
   main()
   #plt.show()    
