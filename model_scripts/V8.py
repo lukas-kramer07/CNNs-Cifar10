@@ -23,7 +23,7 @@ def main():
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
     #train for 20 epochs
-    history = model.fit(train_ds, epochs=3, validation_data=test_ds)
+    history = model.fit(train_ds, epochs=20, validation_data=test_ds)
     model_eval(history=history, model=model,model_name=model_name, test_ds=test_ds)
 
 ## Preprocessing the dataset
