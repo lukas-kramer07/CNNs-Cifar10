@@ -8,10 +8,12 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import tensorflow_datasets as tfds
 model_name = 'V8'
+IM_SIZE = 32
+BATCH_SIZE = 32
 
 def main():
     #load dataset
-    train_ds, test_ds= tfds.load('cifar10', split=['train','test'], as_supervised=True)
+    (train_ds, test_ds), ds_info= tfds.load('cifar10', split=['train','test'], as_supervised=True, with_info=True)
   
     model = create_model()
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
@@ -19,8 +21,28 @@ def main():
                 metrics=['accuracy'])
     history = model.fit(train_ds, epochs=3, validation_data=test_ds)
 
-def preprocess_data():
-       
+
+## Preprocessing the dataset
+def preprocess_data(train_ds, test_ds):
+        AUTOTUNE = tf.data.experimental.AUTOTUNE
+        train_ds = (
+             train_ds
+             .map(resize_rescale, num_parallel_calls=AUTOTUNE)
+             .cache()
+             .shuffle(8, reshuffle_each_iteration=True)
+             .batch(BATCH_SIZE)
+             .prefetch(AUTOTUNE)  
+            )
+        test_ds = (
+             test_ds
+             .map(resize_rescale, num_parallel_calls=AUTOTUNE)
+             .batch(BATCH_SIZE)
+             .prefetch(AUTOTUNE) 
+            )
+def resize_rescale(Image, Label):
+    Image = tf.image.resize(Image,(IM_SIZE,IM_SIZE))
+    return Image/255.0, Label
+
 def model_eval(model, history, test_ds):
     '''# Calculate the change in accuracy from the previous epoch
     accuracy_changes = [0] + [history.history['accuracy'][i] - history.history['accuracy'][i-1] for i in range(1, len(history.history['accuracy']))]
@@ -54,7 +76,7 @@ def model_eval(model, history, test_ds):
     # Create the "plots" folder if it doesn't exist
     os.makedirs(f"plots/{model_name}", exist_ok=True)
 
-    plt.savefig(f"plots/{model_name}/history_with_lr_and_change.png")''' #-> move to utils
+    plt.savefig(f"plots/{model_name}/history_with_lr_and_change.png")''' 
 
 
     '''y_probs = model.predict(test_images)
@@ -71,7 +93,7 @@ def model_eval(model, history, test_ds):
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
     os.makedirs(f"model_checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
-    model.save(f"model_checkpoints/{model_name}")''' #-> repair this
+    model.save(f"model_checkpoints/{model_name}")''' #-> move to utils
 
 
 if __name__ == "__main__": 
