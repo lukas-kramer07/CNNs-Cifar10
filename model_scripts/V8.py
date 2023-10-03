@@ -3,6 +3,7 @@
 '''
 import os
 import utils
+from V2 import create_model
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import tensorflow_datasets as tfds
@@ -10,16 +11,16 @@ model_name = 'V8'
 
 def main():
     #load dataset
-    train_ds, test_ds, ds_info = tfds.load('cifar10', split=['train','test'], as_supervised=True)
+    train_ds, test_ds= tfds.load('cifar10', split=['train','test'], as_supervised=True)
   
-    #model = create_model()
-    #model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-    #            loss=tf.keras.losses.CategoricalCrossentropy(),
-    #            metrics=['accuracy'])
-    
+    model = create_model()
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+                loss=tf.keras.losses.CategoricalCrossentropy(),
+                metrics=['accuracy'])
+    history = model.fit(train_ds, epochs=3, validation_data=test_ds)
 
-    
-
+def preprocess_data():
+       
 def model_eval(model, history, test_ds):
     '''# Calculate the change in accuracy from the previous epoch
     accuracy_changes = [0] + [history.history['accuracy'][i] - history.history['accuracy'][i-1] for i in range(1, len(history.history['accuracy']))]
