@@ -67,17 +67,23 @@ def model_eval(model, model_name, history, test_ds):
     plt.ylabel('Accuracy')
     plt.ylim([0, 1.1])
 
-    # Create a twin axis for the learning rate
-    ax2 = plt.gca().twinx()
-    lr_line, = ax2.plot(history.history['lr'], label='Learning Rate', color='m', linestyle='dotted')
-    ax2.set_ylabel('Learning Rate')
+    if 'lr' in history.history:
+      # Create a twin axis for the learning rate
+      ax2 = plt.gca().twinx()
+      lr_line, = ax2.plot(history.history['lr'], label='Learning Rate', color='m', linestyle='dotted')
+      ax2.set_ylabel('Learning Rate')
 
-    # Combine the legend entries from both axes
-    lines = [accuracy_line, val_accuracy_line, accuracy_change_line, lr_line]
-    labels = [line.get_label() for line in lines]
-    plt.legend(lines, labels, loc='upper left')
-    plt.title('Accuracy, Validation Accuracy, Accuracy Change, and Learning Rate')
-    plt.tight_layout()
+      # Combine the legend entries from both axes
+      lines = [accuracy_line, val_accuracy_line, accuracy_change_line, lr_line]
+      labels = [line.get_label() for line in lines]
+      plt.legend(lines, labels, loc='upper left')
+      plt.title('Accuracy, Validation Accuracy, Accuracy Change, and Learning Rate')
+      plt.tight_layout()
+    else:
+      labels = [line.get_label() for line in lines]
+      plt.legend(lines, labels, loc='upper left')
+      plt.title('Accuracy, Validation Accuracy, Accuracy Change')
+      plt.tight_layout()
 
     # Create the "plots" folder if it doesn't exist
     os.makedirs(f"plots/{model_name}", exist_ok=True)
