@@ -10,6 +10,8 @@ import tensorflow_datasets as tfds
 model_name = 'V8'
 IM_SIZE = 32
 BATCH_SIZE = 32
+class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']
+
 
 def main():
     #load dataset
@@ -43,8 +45,8 @@ def preprocess_data(train_ds, test_ds):
         return train_ds, test_ds
 def resize_rescale(Image, Label):
     Image = tf.image.resize(Image,(IM_SIZE,IM_SIZE))
+    Label = tf.one_hot(Label, len(class_names))
     return Image/255.0, Label
-
 def model_eval(model, history, test_ds):
     '''# Calculate the change in accuracy from the previous epoch
     accuracy_changes = [0] + [history.history['accuracy'][i] - history.history['accuracy'][i-1] for i in range(1, len(history.history['accuracy']))]
