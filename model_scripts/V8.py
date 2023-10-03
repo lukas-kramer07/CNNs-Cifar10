@@ -80,6 +80,7 @@ def model_eval(model, model_name, history, test_ds):
       plt.title('Accuracy, Validation Accuracy, Accuracy Change, and Learning Rate')
       plt.tight_layout()
     else:
+      lines = [accuracy_line, val_accuracy_line, accuracy_change_line]
       labels = [line.get_label() for line in lines]
       plt.legend(lines, labels, loc='upper left')
       plt.title('Accuracy, Validation Accuracy, Accuracy Change')
