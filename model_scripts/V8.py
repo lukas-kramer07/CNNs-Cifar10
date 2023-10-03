@@ -14,7 +14,8 @@ BATCH_SIZE = 32
 def main():
     #load dataset
     (train_ds, test_ds), ds_info= tfds.load('cifar10', split=['train','test'], as_supervised=True, with_info=True)
-  
+    #preprocess
+    train_ds, test_ds = preprocess_data(train_ds, test_ds)
     model = create_model()
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                 loss=tf.keras.losses.CategoricalCrossentropy(),
@@ -39,6 +40,7 @@ def preprocess_data(train_ds, test_ds):
              .batch(BATCH_SIZE)
              .prefetch(AUTOTUNE) 
             )
+        return train_ds, test_ds
 def resize_rescale(Image, Label):
     Image = tf.image.resize(Image,(IM_SIZE,IM_SIZE))
     return Image/255.0, Label
