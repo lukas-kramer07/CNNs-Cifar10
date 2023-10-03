@@ -26,7 +26,7 @@ def main():
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
     #train for 20 epochs
-    history = model.fit(train_ds, epochs=10, validation_data=test_ds)
+    history = model.fit(train_ds, epochs=20, validation_data=test_ds)
 
     #model_evaluation
     model_eval(history=history, model=model,model_name=model_name, test_ds=test_ds)
@@ -56,10 +56,10 @@ def resize_rescale(Image, Label):
 
 ## Evaluation
 def model_eval(model, model_name, history, test_ds):
-    '''utils.change_plot(history)
+    utils.change_plot(history)
     # Create the "plots" folder if it doesn't exist
     os.makedirs(f"plots/{model_name}", exist_ok=True)
-    plt.savefig(f"plots/{model_name}/history_with_lr_and_change.png")'''
+    plt.savefig(f"plots/{model_name}/history_with_lr_and_change.png")
 
     y_probs = model.predict(test_ds)
     y_preds = tf.argmax(y_probs, axis=1)
