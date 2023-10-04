@@ -13,9 +13,6 @@ def model_eval(model, model_name, history, test_ds, class_names):
 
     y_probs = model.predict(test_ds)
     y_preds = tf.argmax(y_probs, axis=1)
-    print(type(y_preds))
-    print(y_preds)
-    print(test_ds)
     y_true = np.concatenate([y for x, y in test_ds], axis=0) # extract labels from test_ds
     y_true = tf.argmax(y_true, axis=1) # revert from one_hot
     Confusion_Matrix.make_confusion_matrix(y_true=y_true,
