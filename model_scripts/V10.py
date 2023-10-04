@@ -60,7 +60,7 @@ def main():
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
     #train for 20 epochs
-    history = model.fit(train_ds, epochs=20, validation_data=test_ds, callbacks=[es_callback, scheduler_callback, checkpoint_callback, plateau_callback])
+    history = model.fit(train_ds, epochs=20, validation_data=test_ds, callbacks=[es_callback, scheduler_callback, checkpoint_callback, plateau_callback, tensorboard_callback])
 
     #model_evaluation
     utils.model_eval(history=history, model=model,model_name=model_name, test_ds=test_ds, class_names=class_names)
