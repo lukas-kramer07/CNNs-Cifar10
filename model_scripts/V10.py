@@ -4,6 +4,7 @@
 import utils
 from V2 import create_model
 import tensorflow as tf
+from keras import backend as K
 import matplotlib.pyplot as plt
 import tensorflow_datasets as tfds
 import numpy as np
@@ -21,13 +22,22 @@ def main():
     #preprocess
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     
-    #define callbacks+
-    Current_Time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    METRIC_DIR = f'./logs/{Current_Time}/metrics'
-    train_writer = tf.summary.create_file_writer(METRIC_DIR)
+    #define callbacks
 
+    #custom TensorBoard callback
+    Current_Time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     LOG_DIR = './logs/fit/'+ Current_Time
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, profile_batch=25)
+    class LRTensorBoard(TensorBoard):
+        # add other arguments to __init__ if you need
+        def __init__(self, log_dir, **kwargs):
+            super().__init__(log_dir=log_dir, **kwargs)
+
+        def on_epoch_end(self, epoch, logs=None):
+            logs = logs or {}
+            logs.update({'lr': K.eval(self.model.optimizer.lr)})
+            super().on_epoch_end(epoch, logs)
+
+    
     es_callback = EarlyStopping(
         monitor = 'val_accuracy', min_delta=0, patience=5, verbose=1, mode='auto', baseline=None, restore_best_weights = True 
     )
@@ -36,8 +46,6 @@ def main():
             lr = lr
         else:
             lr = (lr * tf.math.exp(-0.1)).numpy()
-        with train_writer.as_default():
-            tf.summary.scalar('Learning Rate', data=lr, step = epoch)
         return lr
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1) 
     checkpoint_callback = ModelCheckpoint(
@@ -60,7 +68,7 @@ def main():
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
     #train for 20 epochs
-    history = model.fit(train_ds, epochs=20, validation_data=test_ds, callbacks=[es_callback, scheduler_callback, checkpoint_callback, plateau_callback, tensorboard_callback])
+    history = model.fit(train_ds, epochs=20, validation_data=test_ds, callbacks=[es_callback, scheduler_callback, checkpoint_callback, plateau_callback,  LRTensorBoard(log_dir=LOG_DIR)])
 
     #model_evaluation
     utils.model_eval(history=history, model=model,model_name=model_name, test_ds=test_ds, class_names=class_names)
