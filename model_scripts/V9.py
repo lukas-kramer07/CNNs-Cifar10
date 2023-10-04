@@ -45,6 +45,7 @@ def main():
         min_lr=0,
     )
 
+    # Create and compile model
     model = create_model()
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                 loss=tf.keras.losses.CategoricalCrossentropy(),
