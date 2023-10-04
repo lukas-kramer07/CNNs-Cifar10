@@ -32,7 +32,7 @@ def main():
         return lr
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1) 
     checkpoint_callback = ModelCheckpoint(
-        'checkpoints', monitor = 'val_loss', verbose=0, save_best_only=True, mode='auto'
+        f'model_checkpoints/training_checkpoints/{model_name}', monitor = 'val_loss', verbose=0, save_best_only=True, mode='auto'
     ) 
     plateau_callback = ReduceLROnPlateau(
         monitor='val_accuracy',
@@ -50,7 +50,7 @@ def main():
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
     #train for 20 epochs
-    history = model.fit(train_ds, epochs=20, validation_data=test_ds)
+    history = model.fit(train_ds, epochs=20, validation_data=test_ds, callbacks=[es_callback, scheduler_callback, checkpoint_callback, plateau_callback])
 
     #model_evaluation
     utils.model_eval(history=history, model=model,model_name=model_name, test_ds=test_ds, class_names=class_names)
