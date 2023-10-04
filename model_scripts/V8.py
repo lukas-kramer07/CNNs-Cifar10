@@ -1,7 +1,6 @@
 '''
   uses V2 model and tfds instead of keras.datasets. All subsequent models will use tfds
 '''
-import os
 import utils
 from V2 import create_model
 import tensorflow as tf
