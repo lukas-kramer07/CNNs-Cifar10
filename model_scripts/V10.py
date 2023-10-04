@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import tensorflow_datasets as tfds
 import numpy as np
 from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
+import datetime
 model_name = 'V8'
 IM_SIZE = 32
 BATCH_SIZE = 32
