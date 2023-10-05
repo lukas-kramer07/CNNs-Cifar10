@@ -30,7 +30,7 @@ def main():
     class LRTensorBoard(TensorBoard):
         # add other arguments to __init__ if you need
         def __init__(self, log_dir, **kwargs):
-            super().__init__(log_dir=log_dir, **kwargs)
+            super().__init__(log_dir=log_dir, histogram_freq=3, **kwargs)
 
         def on_epoch_end(self, epoch, logs=None):
             logs = logs or {}
