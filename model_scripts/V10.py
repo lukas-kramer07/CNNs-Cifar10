@@ -99,3 +99,28 @@ def resize_rescale(Image, Label):
 if __name__ == "__main__": 
   main()
   plt.show()   
+
+
+'''
+instead one could use the tensorboard callback with a writer:
+
+#define callbacks+
+    Current_Time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    METRIC_DIR = f'./logs/{Current_Time}/metrics'
+    train_writer = tf.summary.create_file_writer(METRIC_DIR)
+
+    LOG_DIR = './logs/fit/'+ Current_Time
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, profile_batch=25)
+    es_callback = EarlyStopping(
+        monitor = 'val_accuracy', min_delta=0, patience=5, verbose=1, mode='auto', baseline=None, restore_best_weights = True 
+    )
+    def scheduler(epoch, lr):
+        if epoch < 3:
+            lr = lr
+        else:
+            lr = (lr * tf.math.exp(-0.1)).numpy()
+        with train_writer.as_default():
+            tf.summary.scalar('Learning Rate', data=lr, step = epoch)
+        return lr
+    scheduler_callback = LearningRateScheduler(scheduler, verbose=1) 
+'''
