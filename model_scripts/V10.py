@@ -27,16 +27,16 @@ def main():
     #custom TensorBoard callback
     Current_Time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     LOG_DIR = './logs/fit/'+ Current_Time
-    class LRTensorBoard(TensorBoard):
-        # add other arguments to __init__ if you need
-        def __init__(self, log_dir, **kwargs):
-            super().__init__(log_dir=log_dir, histogram_freq=3, **kwargs)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, histogram_freq=3)
+    class LearningRateLogger(tf.keras.callbacks.Callback):
+        def __init__(self):
+            super().__init__()
+            self._supports_tf_logs = True
 
         def on_epoch_end(self, epoch, logs=None):
-            logs = logs or {}
-            logs.update({'lr': K.eval(self.model.optimizer.lr)})
-            super().on_epoch_end(epoch, logs)
-
+            if logs is None or "learning_rate" in logs:
+                return
+            logs["learning_rate"] = self.model.optimizer.lr
     
     es_callback = EarlyStopping(
         monitor = 'val_accuracy', min_delta=0, patience=5, verbose=1, mode='auto', baseline=None, restore_best_weights = True 
@@ -68,7 +68,7 @@ def main():
                 loss=tf.keras.losses.CategoricalCrossentropy(),
                 metrics=['accuracy'])
     #train for 20 epochs
-    history = model.fit(train_ds, epochs=20, validation_data=test_ds, callbacks=[es_callback, scheduler_callback, checkpoint_callback, plateau_callback,  LRTensorBoard(log_dir=LOG_DIR)])
+    history = model.fit(train_ds, epochs=20, validation_data=test_ds, callbacks=[LearningRateLogger() ,es_callback, scheduler_callback, checkpoint_callback, plateau_callback,  tensorboard_callback])
 
     #model_evaluation
     utils.model_eval(history=history, model=model,model_name=model_name, test_ds=test_ds, class_names=class_names)
