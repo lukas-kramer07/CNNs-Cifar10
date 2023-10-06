@@ -113,7 +113,7 @@ def visualize_data(train_ds, ds_info):
     for i, (image, label) in enumerate(train_ds.take(16)):
         ax = plt.subplot(7,7, i+1)
         plt.imshow(image[0])
-        plt.title(ds_info.features['label'].int2str(label[0]), fontsize=30)
+        plt.title(ds_info.features['label'].int2str(int(tf.argmax(label[0]))), fontsize=30)
         
         plt.axis("off")
         plt.subplots_adjust(right=6, top=6) 
