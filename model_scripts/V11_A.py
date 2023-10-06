@@ -110,13 +110,15 @@ def augment(Image, Label):
     Image = tf.image.random_saturation(Image, 0,0.5)
     return Image, Label
 def visualize_data(train_ds, ds_info):
-    num_images_to_display = 10
-    for i in range(num_images_to_display):
+    num_images_to_display = 20
+    count = 0
+    for i in range(int(np.ceil(num_images_to_display/BATCH_SIZE))):
         image, label = next(iter(train_ds))
-        ax = plt.subplot(int(tf.sqrt(float(num_images_to_display))) + 1, int(tf.sqrt(float(num_images_to_display))) + 1, i + 1)
-        plt.imshow(image[0]) 
-        plt.title(ds_info.features['label'].int2str(int(tf.argmax(label[0]))), fontsize=10)
-        plt.axis("off")
+        for n in range(min(BATCH_SIZE, num_images_to_display-i*BATCH_SIZE)):
+            ax = plt.subplot(int(tf.sqrt(float(num_images_to_display))) + 1, int(tf.sqrt(float(num_images_to_display))) + 1, n+i + 1)
+            plt.imshow(image[n]) 
+            plt.title(ds_info.features['label'].int2str(int(tf.argmax(label[n]))), fontsize=10)
+            plt.axis("off")
     plt.show()
 
 if __name__ == "__main__": 
