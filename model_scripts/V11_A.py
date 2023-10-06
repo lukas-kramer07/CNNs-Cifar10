@@ -98,7 +98,14 @@ def resize_rescale(Image, Label):
     return Image/255.0, Label
 
 def augment(Image, Label):
-
+    Image = tf.image.random_flip_left_right(Image)
+    if tf.random.uniform((), maxval=1, minval=0) < 0.1:
+        Image = tf.image.rgb_to_grayscale(Image)
+    Image = tf.image.random_brightness(Image, 0.15)
+    Image = tf.image.random_contrast(Image, 0, 0.15)
+    Image = tf.image.random_hue(Image, 0.15)
+    Image = tf.image.random_jpeg_quality(Image, 90, 100)
+    Image = tf.image.random_saturation(Image, 0,0.5)
     return Image, Label
 def visualize_data(train_ds, ds_info):
     for i, (image, label) in enumerate(train_ds.take(16)):
