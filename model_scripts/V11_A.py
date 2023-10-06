@@ -100,35 +100,39 @@ def resize_rescale(Image, Label):
 @tf.function
 def augment(Image, Label):
     Image = tf.image.random_flip_left_right(Image)
-    #Image = tf.image.random_hue(Image, 0.15)
+    Image = tf.image.random_hue(Image, 0.05)
     if tf.random.uniform((), maxval=1, minval=0) < 0.15:
         Image = tf.image.rgb_to_grayscale(Image)
         Image = tf.image.grayscale_to_rgb(Image)
-    #Image = tf.image.random_brightness(Image, 0.15)
+    Image = tf.image.random_brightness(Image, 0.15)
     #Image = tf.image.random_contrast(Image, 0, 0.15)
     #Image = tf.image.random_jpeg_quality(Image, 90, 100)
     #Image = tf.image.random_saturation(Image, 0,0.5)
     return Image, Label
+
 def visualize_data(train_ds, test_ds, ds_info):
-    num_images_to_display = 10
-    plt.figure(figsize=(10, 10))
-    plt.suptitle("Test Samples", fontsize=14)
-    for i in range(int(np.ceil(num_images_to_display/BATCH_SIZE))):
+    num_images_to_display = 15
+    plt.figure(figsize=(num_images_to_display, num_images_to_display))
+    count = 0
+    # Plot test samples
+    for i in range(int(np.ceil(num_images_to_display / BATCH_SIZE))):
         image, label = next(iter(test_ds))
-        for n in range(min(BATCH_SIZE, num_images_to_display-i*BATCH_SIZE)):
-            ax = plt.subplot(int(tf.sqrt(float(num_images_to_display))) + 1, int(tf.sqrt(float(num_images_to_display))) + 1, n+i + 1)
+        for n in range(min(BATCH_SIZE, num_images_to_display - i * BATCH_SIZE)):
+            ax = plt.subplot(2*int(tf.sqrt(float(num_images_to_display))) + 1, 2*int(tf.sqrt(float(num_images_to_display))) + 1, n + i + 1)
             plt.imshow(image[n]) 
-            plt.title(ds_info.features['label'].int2str(int(tf.argmax(label[n]))), fontsize=10)
+            plt.title(f"Test - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}", fontsize=10)
             plt.axis("off")
-    plt.figure(figsize=(10, 10))
-    plt.suptitle("Train Samples", fontsize=14)
-    for i in range(int(np.ceil(num_images_to_display/BATCH_SIZE))):
+            count += 1
+
+    # Plot train samples
+    for k in range(int(np.ceil(num_images_to_display / BATCH_SIZE))):
         image, label = next(iter(train_ds))
-        for n in range(min(BATCH_SIZE, num_images_to_display-i*BATCH_SIZE)):
-            ax = plt.subplot(int(tf.sqrt(float(num_images_to_display))) + 1, int(tf.sqrt(float(num_images_to_display))) + 1, n+i + 1)
+        for n in range(min(BATCH_SIZE, num_images_to_display - k * BATCH_SIZE)):
+            ax = plt.subplot(2*int(tf.sqrt(float(num_images_to_display))) + 1, 2*int(tf.sqrt(float(num_images_to_display))) + 1, n + i + count + 1) 
             plt.imshow(image[n]) 
-            plt.title(ds_info.features['label'].int2str(int(tf.argmax(label[n]))), fontsize=10)
+            plt.title(f"Train - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}", fontsize=10)
             plt.axis("off")
+    plt.suptitle("Train and Test Samples", fontsize=14)
     plt.show()
 
 if __name__ == "__main__": 
