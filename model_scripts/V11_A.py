@@ -117,6 +117,7 @@ def visualize_data(train_ds, ds_info):
         
         plt.axis("off")
         plt.subplots_adjust(right=6, top=6) 
+    plt.show()
 if __name__ == "__main__": 
   main()
   plt.show()  
