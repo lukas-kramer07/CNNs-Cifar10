@@ -21,7 +21,7 @@ def main():
     (train_ds, test_ds), ds_info= tfds.load('cifar10', split=['train','test'], as_supervised=True, with_info=True)
     #preprocess
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
-    #visualize data
+    #visualize new data
     visualize_data(train_ds=train_ds, ds_info=ds_info)
     #define callbacks
     #custom TensorBoard callback
@@ -100,14 +100,14 @@ def resize_rescale(Image, Label):
 @tf.function
 def augment(Image, Label):
     Image = tf.image.random_flip_left_right(Image)
-    Image = tf.image.random_hue(Image, 0.15)
-    if tf.random.uniform((), maxval=1, minval=0) < 0.1:
+    #Image = tf.image.random_hue(Image, 0.15)
+    if tf.random.uniform((), maxval=1, minval=0) < 0.5:
         Image = tf.image.rgb_to_grayscale(Image)
         Image = tf.image.grayscale_to_rgb(Image)
-    Image = tf.image.random_brightness(Image, 0.15)
-    Image = tf.image.random_contrast(Image, 0, 0.15)
-    Image = tf.image.random_jpeg_quality(Image, 90, 100)
-    Image = tf.image.random_saturation(Image, 0,0.5)
+    #Image = tf.image.random_brightness(Image, 0.15)
+    #Image = tf.image.random_contrast(Image, 0, 0.15)
+    #Image = tf.image.random_jpeg_quality(Image, 90, 100)
+    #Image = tf.image.random_saturation(Image, 0,0.5)
     return Image, Label
 def visualize_data(train_ds, ds_info):
     num_images_to_display = 20
