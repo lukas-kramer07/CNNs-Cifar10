@@ -103,6 +103,7 @@ def augment(Image, Label):
     Image = tf.image.random_hue(Image, 0.15)
     if tf.random.uniform((), maxval=1, minval=0) < 0.1:
         Image = tf.image.rgb_to_grayscale(Image)
+        Image = tf.image.grayscale_to_rgb(Image)
     Image = tf.image.random_brightness(Image, 0.15)
     Image = tf.image.random_contrast(Image, 0, 0.15)
     Image = tf.image.random_jpeg_quality(Image, 90, 100)
@@ -111,8 +112,8 @@ def augment(Image, Label):
 def visualize_data(train_ds, ds_info):
     for i, (image, label) in enumerate(train_ds.take(16)):
         ax = plt.subplot(7,7, i+1)
-        plt.imshow(image)
-        plt.title(ds_info.features['label'].int2str(label), fontsize=30)
+        plt.imshow(image[0])
+        plt.title(ds_info.features['label'].int2str(label[0]), fontsize=30)
         
         plt.axis("off")
         plt.subplots_adjust(right=6, top=6) 
