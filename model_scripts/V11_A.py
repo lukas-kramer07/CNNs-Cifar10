@@ -97,13 +97,14 @@ def resize_rescale(Image, Label):
     Label = tf.one_hot(Label, len(class_names)) #one_hot_encode
     return Image/255.0, Label
 
+@tf.function
 def augment(Image, Label):
     Image = tf.image.random_flip_left_right(Image)
+    Image = tf.image.random_hue(Image, 0.15)
     if tf.random.uniform((), maxval=1, minval=0) < 0.1:
         Image = tf.image.rgb_to_grayscale(Image)
     Image = tf.image.random_brightness(Image, 0.15)
     Image = tf.image.random_contrast(Image, 0, 0.15)
-    Image = tf.image.random_hue(Image, 0.15)
     Image = tf.image.random_jpeg_quality(Image, 90, 100)
     Image = tf.image.random_saturation(Image, 0,0.5)
     return Image, Label
