@@ -21,7 +21,8 @@ def main():
     (train_ds, test_ds), ds_info= tfds.load('cifar10', split=['train','test'], as_supervised=True, with_info=True)
     #preprocess
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
-    
+    #visualize data
+    visualize_data(train_ds=train_ds, ds_info=ds_info)
     #define callbacks
     #custom TensorBoard callback
     Current_Time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -97,7 +98,16 @@ def resize_rescale(Image, Label):
     return Image/255.0, Label
 
 def augment(Image, Label):
+
     return Image, Label
+def visualize_data(train_ds, ds_info):
+    for i, (image, label) in enumerate(train_ds.take(16)):
+        ax = plt.subplot(7,7, i+1)
+        plt.imshow(image)
+        plt.title(ds_info.features['label'].int2str(label), fontsize=30)
+        
+        plt.axis("off")
+        plt.subplots_adjust(right=6, top=6) 
 if __name__ == "__main__": 
   main()
   plt.show()  
