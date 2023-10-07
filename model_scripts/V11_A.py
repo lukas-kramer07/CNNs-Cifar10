@@ -106,7 +106,7 @@ def augment(Image, Label):
         Image = tf.image.grayscale_to_rgb(Image)
     Image = tf.image.random_brightness(Image, 0.2)
     #Image = tf.image.random_contrast(Image, 0, 0.15)
-    #Image = tf.image.random_jpeg_quality(Image, 90, 100)
+    Image = tf.image.random_jpeg_quality(Image, 90, 100)
     #Image = tf.image.random_saturation(Image, 0,0.5)
     return Image, Label
 
