@@ -8,8 +8,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from model_scripts.V11_A import augment
 import utils
 from keras import backend as K
+from keras.layers import Layer, RandomBrightness, RandomFlip, RandomRotation, RandomTranslation, RandomContrast, RandomZoom
 from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
@@ -35,7 +37,12 @@ class_names = [
     "truck",
 ]
 
-
+def create_augment_layers():
+    augment_layers = tf.keras.Sequential([
+        tf.keras.Input(shape=(32,32,)),
+        RandomFlip(),
+    ])
+    return augment_layers
 def main():
     # load dataset
     (train_ds, test_ds), ds_info = tfds.load(
