@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import tensorflow_datasets as tfds
 import numpy as np
 from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler, ModelCheckpoint, ReduceLROnPlateau
-model_name = 'V8'
+model_name = 'V9'
 IM_SIZE = 32
 BATCH_SIZE = 32
 class_names = ['airplane', 'automobile', 'bird', 'cat', 'deer','dog', 'frog', 'horse', 'ship', 'truck']

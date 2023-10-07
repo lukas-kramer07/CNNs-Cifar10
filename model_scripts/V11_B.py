@@ -10,7 +10,8 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from keras import backend as K
-from tensorflow.keras.callbacks import (
+from keras import layers
+from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
     ModelCheckpoint,
@@ -96,8 +97,12 @@ def main():
         min_lr=0,
     )
 
-    # Create and compile model
-    model = create_model()
+    # Create and compile model -> add augmentation layers at the beginning 
+    # and then continue with V2-model
+    model = tf.keras.Sequential()
+
+    model.add(create_model() , name='V2-model')
+    model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
         loss=tf.keras.losses.CategoricalCrossentropy(),

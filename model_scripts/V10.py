@@ -17,7 +17,7 @@ from tensorflow.keras.callbacks import (
 )
 from V2 import create_model
 
-model_name = "V8"
+model_name = "V10"
 IM_SIZE = 32
 BATCH_SIZE = 32
 class_names = [
