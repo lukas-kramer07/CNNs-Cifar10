@@ -10,7 +10,6 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from keras import backend as K
-from keras import layers
 from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
@@ -97,11 +96,11 @@ def main():
         min_lr=0,
     )
 
-    # Create and compile model -> add augmentation layers at the beginning 
+    # Create and compile model -> add augmentation layers at the beginning
     # and then continue with V2-model
     model = tf.keras.Sequential()
 
-    model.add(create_model() , name='V2-model')
+    model.add(create_model(), name="V2-model")
     model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
@@ -154,6 +153,7 @@ def resize_rescale(Image, Label):
     Image = tf.image.resize(Image, (IM_SIZE, IM_SIZE))
     Label = tf.one_hot(Label, len(class_names))  # one_hot_encode
     return Image / 255.0, Label
+
 
 def visualize_data(train_ds, test_ds, ds_info):
     num_images_to_display = 15
