@@ -1,5 +1,6 @@
 """
-  uses V2 model and V10 callbacks as well as augmentation 
+  uses V2 model and V10 callbacks as well as augmentation using and augment 
+  function and tf.image
 """
 import datetime
 
