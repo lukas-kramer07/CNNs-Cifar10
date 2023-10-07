@@ -42,10 +42,10 @@ def main():
         monitor = 'val_accuracy', min_delta=0, patience=5, verbose=1, mode='auto', baseline=None, restore_best_weights = True 
     )
     def scheduler(epoch, lr):
-        if epoch < 3:
+        if epoch <= 3:
             lr = lr
-        else:
-            lr = (lr * tf.math.exp(-0.1)).numpy()
+        elif epoch % 3 == 0:
+            lr = (lr * tf.math.exp(-0.3)).numpy()
         return lr
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1) 
     checkpoint_callback = ModelCheckpoint(
