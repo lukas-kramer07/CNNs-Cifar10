@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import utils
 from keras.utils import to_categorical
-from tensorflow.keras import datasets, layers, models
+from keras import datasets, layers, models
 
 model_name = "V6"
 
@@ -16,11 +16,7 @@ def create_model():
     model = models.Sequential()
 
     # First convolutional block
-    model.add(
-        layers.Conv2D(
-            32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)
-        )
-    )
+    model.add(layers.Conv2D(32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)))
     model.add(layers.BatchNormalization())
     model.add(layers.Conv2D(32, (3, 3), activation="relu", padding="same"))
     model.add(layers.BatchNormalization())
@@ -98,9 +94,7 @@ def main():
     plt.ylabel("Accuracy")
     plt.ylim([0.5, 1])
     plt.legend(loc="lower right")
-    os.makedirs(
-        f"plots/{model_name}", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/history")
 
     y_probs = model.predict(test_images)
@@ -113,17 +107,13 @@ def main():
         text_size=8,
         model_name=model_name,
     )
-    os.makedirs(
-        f"plots/{model_name}", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/confusion_matrix")
 
     test_loss, test_acc = model.evaluate(test_images, test_labels_hot, verbose=1)
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
-    os.makedirs(
-        "model_checkpoints", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs("model_checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
     model.save(f"model_checkpoints/{model_name}")
 
 

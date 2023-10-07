@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import utils
 from keras.utils import to_categorical
-from tensorflow.keras import datasets
-from tensorflow.keras.callbacks import LearningRateScheduler
+from keras import datasets
+from keras.callbacks import LearningRateScheduler
 from V6 import create_model
 
 model_name = "V7"
@@ -68,17 +68,11 @@ def main():
     plt.figure(figsize=(10, 6))
 
     # Plot accuracy and validation accuracy
-    (accuracy_line,) = plt.plot(
-        history.history["accuracy"], label="accuracy", color="b"
-    )
-    (val_accuracy_line,) = plt.plot(
-        history.history["val_accuracy"], label="val_accuracy", color="g"
-    )
+    (accuracy_line,) = plt.plot(history.history["accuracy"], label="accuracy", color="b")
+    (val_accuracy_line,) = plt.plot(history.history["val_accuracy"], label="val_accuracy", color="g")
 
     # Plot change in accuracy
-    (accuracy_change_line,) = plt.plot(
-        accuracy_changes, label="Accuracy Change", color="r", linestyle="dashed"
-    )
+    (accuracy_change_line,) = plt.plot(accuracy_changes, label="Accuracy Change", color="r", linestyle="dashed")
 
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
@@ -86,9 +80,7 @@ def main():
 
     # Create a twin axis for the learning rate
     ax2 = plt.gca().twinx()
-    (lr_line,) = ax2.plot(
-        history.history["lr"], label="Learning Rate", color="m", linestyle="dotted"
-    )
+    (lr_line,) = ax2.plot(history.history["lr"], label="Learning Rate", color="m", linestyle="dotted")
     ax2.set_ylabel("Learning Rate")
 
     # Combine the legend entries from both axes
@@ -114,17 +106,13 @@ def main():
         text_size=8,
         model_name=model_name,
     )
-    os.makedirs(
-        f"plots/{model_name}", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/confusion_matrix")
 
     test_loss, test_acc = model.evaluate(test_images, test_labels_hot, verbose=1)
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
-    os.makedirs(
-        "model_checkpoints", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs("model_checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
     model.save(f"model_checkpoints/{model_name}")
 
 

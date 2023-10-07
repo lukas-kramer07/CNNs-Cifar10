@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from sklearn.metrics import confusion_matrix
-from tensorflow.keras import datasets, layers
+from keras import datasets, layers
 
 model_name = "V0_Dense"
 
@@ -137,9 +137,7 @@ def main():
     plt.ylabel("Accuracy")
     plt.ylim([0.2, 1])
     plt.legend(loc="lower right")
-    os.makedirs(
-        f"plots/{model_name}", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/history")
 
     y_probs = model.predict(test_images)
@@ -152,17 +150,13 @@ def main():
         text_size=8,
         model_name=model_name,
     )
-    os.makedirs(
-        f"plots/{model_name}", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/confusion_matrix")
 
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
-    os.makedirs(
-        "model_checkpoints", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs("model_checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
     model.save(f"model_checkpoints/{model_name}")
 
 
