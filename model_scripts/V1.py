@@ -6,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import utils
-from tensorflow.keras import datasets, layers, models
+from keras import datasets, layers, models
 
 model_name = "V1"
 
@@ -33,11 +33,7 @@ def main():
     # Normalize pixel values to be between 0 and 1
     train_images, test_images = train_images / 255.0, test_images / 255.0
     model = models.Sequential()
-    model.add(
-        layers.Conv2D(
-            32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)
-        )
-    )
+    model.add(layers.Conv2D(32, (3, 3), activation="relu", padding="same", input_shape=(32, 32, 3)))
     model.add(layers.MaxPooling2D((2, 2)))
     model.add(layers.Conv2D(64, (3, 3), activation="relu", padding="same"))
     model.add(layers.MaxPooling2D((2, 2)))
@@ -66,9 +62,7 @@ def main():
     plt.ylabel("Accuracy")
     plt.ylim([0.5, 1])
     plt.legend(loc="lower right")
-    os.makedirs(
-        f"plots/{model_name}", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/history")
 
     y_probs = model.predict(test_images)
@@ -81,17 +75,13 @@ def main():
         text_size=8,
         model_name=model_name,
     )
-    os.makedirs(
-        f"plots/{model_name}", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs(f"plots/{model_name}", exist_ok=True)  # Create the "models" folder if it doesn't exist
     plt.savefig(f"plots/{model_name}/confusion_matrix")
 
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print(f"test_acc: {test_acc}; test_loss: {test_loss}")
     model.summary()
-    os.makedirs(
-        "model_checkpoints", exist_ok=True
-    )  # Create the "models" folder if it doesn't exist
+    os.makedirs("model_checkpoints", exist_ok=True)  # Create the "models" folder if it doesn't exist
     model.save(f"model_checkpoints/{model_name}")
 
 

@@ -8,10 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from model_scripts.V11_A import augment
 import utils
 from keras import backend as K
-from keras.layers import Layer, RandomBrightness, RandomFlip, RandomRotation, RandomTranslation, RandomContrast, RandomZoom
+from keras.layers import RandomFlip
 from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
@@ -37,17 +36,25 @@ class_names = [
     "truck",
 ]
 
+
 def create_augment_layers():
-    augment_layers = tf.keras.Sequential([
-        tf.keras.Input(shape=(32,32,)),
-        RandomFlip(),
-    ])
+    augment_layers = tf.keras.Sequential(
+        [
+            tf.keras.Input(
+                shape=(
+                    32,
+                    32,
+                )
+            ),
+            RandomFlip(),
+        ]
+    )
     return augment_layers
+
+
 def main():
     # load dataset
-    (train_ds, test_ds), ds_info = tfds.load(
-        "cifar10", split=["train", "test"], as_supervised=True, with_info=True
-    )
+    (train_ds, test_ds), ds_info = tfds.load("cifar10", split=["train", "test"], as_supervised=True, with_info=True)
     # preprocess
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
@@ -148,11 +155,7 @@ def preprocess_data(train_ds, test_ds):
         .batch(BATCH_SIZE)
         .prefetch(AUTOTUNE)
     )
-    test_ds = (
-        test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE)
-        .batch(BATCH_SIZE)
-        .prefetch(AUTOTUNE)
-    )
+    test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
 
 
