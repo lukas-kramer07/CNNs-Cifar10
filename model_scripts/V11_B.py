@@ -43,7 +43,7 @@ def create_augment_layers():
             tf.keras.Input(shape=(32, 32, 3)),
             RandomFlip(mode="horizontal"),
             RandomBrightness(factor=0.3, value_range=(0, 1)),
-            RandomZoom((-0.2, 0.2), (-0.2,0.2)),
+            RandomZoom((-0.1, 0.1), (-0.1,0.1)),
         ],
         name="augment_layers",
     )
