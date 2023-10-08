@@ -10,7 +10,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from keras import backend as K
-from keras.layers import RandomFlip
+from keras.layers import RandomFlip, RandomBrightness, RandomContrast, RandomTranslation, RandomZoom
 from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
@@ -38,10 +38,10 @@ class_names = [
 
 
 def create_augment_layers():
-    augment_layers = tf.keras.Sequential(
-        [
-            tf.keras.Input(shape= (32, 32, 3)),
-            RandomFlip(),
+    augment_layers = tf.keras.Sequential([
+        tf.keras.Input(shape=(32,32,)),
+        RandomFlip(mode='horizontal'),
+        RandomBrightness(factor=0.2)
         ]
     )
     return augment_layers
