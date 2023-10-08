@@ -10,7 +10,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from keras import backend as K
-from keras.layers import RandomFlip, RandomBrightness, RandomContrast, RandomTranslation, RandomZoom
+from keras.layers import RandomFlip, RandomBrightness, RandomZoom
 from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
@@ -38,12 +38,14 @@ class_names = [
 
 
 def create_augment_layers():
-    augment_layers = tf.keras.Sequential([
-        tf.keras.Input(shape=(32,32,)),
-        RandomFlip(mode='horizontal'),
-        RandomBrightness(factor=0.3, value_range=(0,1)),
-        RandomContrast(factor=0.2)
-        ], name= 'augment_layers'
+    augment_layers = tf.keras.Sequential(
+        [
+            tf.keras.Input(shape=(32, 32, 3)),
+            RandomFlip(mode="horizontal"),
+            RandomBrightness(factor=0.3, value_range=(0, 1)),
+            RandomZoom((-0.2, 0.2), (-0.2,0.2)),
+        ],
+        name="augment_layers",
     )
     return augment_layers
 
@@ -116,7 +118,7 @@ def main():
         loss=tf.keras.losses.CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
-    model.build(input_shape=(32,32,32,3))
+    model.build(input_shape=(32, 32, 32, 3))
     model.summary()
     # train for 20 epochs
     history = model.fit(
