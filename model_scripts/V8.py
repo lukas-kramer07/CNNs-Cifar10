@@ -59,7 +59,7 @@ def preprocess_data(train_ds, test_ds):
         .batch(BATCH_SIZE)
         .prefetch(AUTOTUNE)
     )
-    test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH _SIZE).prefetch(AUTOTUNE)
+    test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
 
 
