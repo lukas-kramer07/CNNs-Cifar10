@@ -11,7 +11,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from keras import backend as K
-from keras.layers import RandomFlip, RandomBrightness, RandomZoom, RandomTranslation
+from keras.layers import RandomFlip, RandomBrightness, RandomZoom, RandomTranslation, Layer
 from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
@@ -37,7 +37,21 @@ class_names = [
     "truck",
 ]
 
-
+class RandomRGB(Layer):
+    def __init__(self, prob=0.15):
+        super().__init__()
+        self.prob = prob
+    def call(self, Image):
+        if tf.random.uniform((), maxval=1, minval=0) < self.prob:
+            Image = tf.image.rgb_to_grayscale(Image)
+            Image = tf.image.grayscale_to_rgb(Image)
+            return Image
+class RandomHue(Layer):
+    def __init__(self, factor=0.1):
+        super().__init__()
+        self.factor = factor
+    def call(self, image):
+        return tf.image.random_hue(image, self.factor)
 def create_augment_layers():
     augment_layers = tf.keras.Sequential(
         [
