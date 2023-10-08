@@ -3,6 +3,7 @@
   function and tf.image
 """
 import datetime
+from textwrap import fill
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +11,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from keras import backend as K
-from keras.layers import RandomFlip, RandomBrightness, RandomZoom
+from keras.layers import RandomFlip, RandomBrightness, RandomZoom, RandomTranslation
 from keras.callbacks import (
     EarlyStopping,
     LearningRateScheduler,
@@ -42,8 +43,8 @@ def create_augment_layers():
         [
             tf.keras.Input(shape=(32, 32, 3)),
             RandomFlip(mode="horizontal"),
-            RandomBrightness(factor=0.3, value_range=(0, 1)),
-            RandomZoom((-0.1, 0.1), (-0.1,0.1)),
+            RandomBrightness(factor=0.2, value_range=(0, 1)),
+            RandomZoom((-0.2, 0.1), (-0.2,0.1), fill_mode='constant'),
         ],
         name="augment_layers",
     )
