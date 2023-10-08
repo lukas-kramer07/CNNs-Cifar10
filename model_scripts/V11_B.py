@@ -41,7 +41,7 @@ def create_augment_layers():
     augment_layers = tf.keras.Sequential([
         tf.keras.Input(shape=(32,32,)),
         RandomFlip(mode='horizontal'),
-        RandomBrightness(factor=0.2)
+        RandomBrightness(factor=0.3, value_range=(0,1))
         ]
     )
     return augment_layers
