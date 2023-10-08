@@ -40,12 +40,7 @@ class_names = [
 def create_augment_layers():
     augment_layers = tf.keras.Sequential(
         [
-            tf.keras.Input(
-                shape=(
-                    32,
-                    32,
-                )
-            ),
+            tf.keras.Input(shape= (32, 32, 3)),
             RandomFlip(),
         ]
     )
@@ -145,7 +140,7 @@ def main():
     )
 
 
-## Preprocessing the dataset
+# Preprocessing the dataset
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
     train_ds = (
@@ -195,7 +190,7 @@ def visualize_data(train_ds, test_ds, ds_info):
                 2 * int(tf.sqrt(float(num_images_to_display))) + 1,
                 n + i + count + 1,
             )
-            plt.imshow(image[n])
+            plt.imshow(create_augment_layers()(tf.expand_dims(image[n], axis=0))[0])
             plt.title(
                 f"Train - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}",
                 fontsize=10,
