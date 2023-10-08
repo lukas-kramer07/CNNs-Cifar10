@@ -41,8 +41,8 @@ def create_augment_layers():
     augment_layers = tf.keras.Sequential([
         tf.keras.Input(shape=(32,32,)),
         RandomFlip(mode='horizontal'),
-        RandomBrightness(factor=0.3, value_range=(0,1))
-        ]
+        RandomBrightness(factor=0.3, value_range=(0,1)),
+        ], name= 'augment_layers'
     )
     return augment_layers
 
@@ -108,14 +108,15 @@ def main():
     # Create and compile model -> add augmentation layers at the beginning
     # and then continue with V2-model
     model = tf.keras.Sequential()
-
-    model.add(create_model(), name="V2-model")
-    model.summary()
+    model.add(create_augment_layers())
+    model.add(create_model())
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
         loss=tf.keras.losses.CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
+    model.build(input_shape=(32,32,32,3))
+    model.summary()
     # train for 20 epochs
     history = model.fit(
         train_ds,
