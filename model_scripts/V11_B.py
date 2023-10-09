@@ -45,7 +45,7 @@ class RandomRGB(Layer):
         if tf.random.uniform((), maxval=1, minval=0) < self.prob:
             Image = tf.image.rgb_to_grayscale(Image)
             Image = tf.image.grayscale_to_rgb(Image)
-            return Image
+        return Image
 class RandomHue(Layer):
     def __init__(self, factor=0.1):
         super().__init__()
