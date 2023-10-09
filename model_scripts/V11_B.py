@@ -41,7 +41,7 @@ class RandomRGB(Layer):
     def __init__(self, prob=0.15):
         super().__init__()
         self.prob = prob
-
+    @tf.function
     def call(self, Image):
         if tf.random.uniform(()) < self.prob:
             Image = tf.image.rgb_to_grayscale(Image)
