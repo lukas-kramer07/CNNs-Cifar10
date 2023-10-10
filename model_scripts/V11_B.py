@@ -37,14 +37,15 @@ class_names = [
 ]
 
 
-class RandomRotation(Layer):
-    def __init__(self, max_angle=30):
+class RandomRotation90(Layer):
+    def __init__(self, prob=0.3):
         super().__init__()
-        self.max_angle = max_angle
-
+        self.prob = prob
+    @tf.function
     def call(self, image):
-        angle = tf.random.uniform((), minval=-self.max_angle, maxval=self.max_angle)
-        return tf.image.rotate(image, angle)
+        if tf.random.uniform(()) < self.prob:
+            image = tf.image.rot90(image)
+        return image
 
 class RandomShear(Layer):
     def __init__(self, shear=0.2):
@@ -79,7 +80,7 @@ class RandomRGB(Layer):
     def __init__(self, prob=0.15):
         super().__init__()
         self.prob = prob
-
+    @tf.function
     def call(self, image):
         if tf.random.uniform(()) < self.prob:
             image = tf.image.rgb_to_grayscale(image)
@@ -99,7 +100,7 @@ def create_augment_layers():
         [
             tf.keras.Input(shape=(32, 32, 3)),
             RandomFlip(mode="horizontal"),
-            RandomRotation(max_angle=30),
+            RandomRotation90(prob=0.2),
             #RandomShear(shear=0.2),
             #RandomContrast(lower=0.7, upper=1.3),
             #RandomSaturation(lower=0.7, upper=1.3),
