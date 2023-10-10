@@ -37,17 +37,54 @@ class_names = [
 ]
 
 
+class RandomRotation(Layer):
+    def __init__(self, max_angle=30):
+        super().__init__()
+        self.max_angle = max_angle
+
+    def call(self, image):
+        angle = tf.random.uniform((), minval=-self.max_angle, maxval=self.max_angle)
+        return tf.image.rotate(image, angle)
+
+class RandomShear(Layer):
+    def __init__(self, shear=0.2):
+        super().__init__()
+        self.shear = shear
+
+    def call(self, image):
+        shear_matrix = tf.convert_to_tensor([[1.0, self.shear, 0.0], [0.0, 1.0, 0.0]], dtype=tf.float32)
+        return tf.raw_ops.Affine(image=image, scale=tf.constant([1.0, 1.0]), translate=tf.constant([0.0, 0.0]), shear=shear_matrix)
+
+class RandomContrast(Layer):
+    def __init__(self, lower=0.7, upper=1.3):
+        super().__init__()
+        self.lower = lower
+        self.upper = upper
+
+    def call(self, image):
+        contrast_factor = tf.random.uniform((), minval=self.lower, maxval=self.upper)
+        return tf.image.adjust_contrast(image, contrast_factor)
+
+class RandomSaturation(Layer):
+    def __init__(self, lower=0.7, upper=1.3):
+        super().__init__()
+        self.lower = lower
+        self.upper = upper
+
+    def call(self, image):
+        saturation_factor = tf.random.uniform((), minval=self.lower, maxval=self.upper)
+        return tf.image.adjust_saturation(image, saturation_factor)
+
 class RandomRGB(Layer):
     def __init__(self, prob=0.15):
         super().__init__()
         self.prob = prob
-    @tf.function
-    def call(self, Image):
-        if tf.random.uniform(()) < self.prob:
-            Image = tf.image.rgb_to_grayscale(Image)
-            Image = tf.image.grayscale_to_rgb(Image)
-        return Image
 
+    def call(self, image):
+        if tf.random.uniform(()) < self.prob:
+            image = tf.image.rgb_to_grayscale(image)
+            image = tf.image.grayscale_to_rgb(image)
+        return image
 
 class RandomHue(Layer):
     def __init__(self, factor=0.1):
@@ -57,21 +94,25 @@ class RandomHue(Layer):
     def call(self, image):
         return tf.image.random_hue(image, self.factor)
 
-
 def create_augment_layers():
     augment_layers = tf.keras.Sequential(
         [
             tf.keras.Input(shape=(32, 32, 3)),
             RandomFlip(mode="horizontal"),
-            RandomHue(factor=0.05),
-            RandomRGB(prob=0.1),
-            RandomBrightness(factor=0.2, value_range=(0, 1)),
-            RandomZoom((-0.2, 0.1), (-0.2, 0.1), fill_mode="reflect"),
-            RandomTranslation(0.1,0.1)
+            RandomRotation(max_angle=30),
+            #RandomShear(shear=0.2),
+            #RandomContrast(lower=0.7, upper=1.3),
+            #RandomSaturation(lower=0.7, upper=1.3),
+            #RandomRGB(prob=0.1),
+            #RandomHue(factor=0.05),
+            #RandomTranslation(height_factor=0.1, width_factor=0.1),
+            #RandomZoom(height_factor_range=(-0.2, 0.1), width_factor_range=(-0.2, 0.1), fill_mode="reflect"),
+            #RandomBrightness(factor=0.2, value_range=(0, 1)),
         ],
         name="augment_layers",
     )
     return augment_layers
+
 
 
 def main():
