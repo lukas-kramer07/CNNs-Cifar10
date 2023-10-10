@@ -47,34 +47,6 @@ class RandomRotation90(Layer):
             image = tf.image.rot90(image)
         return image
 
-class RandomShear(Layer):
-    def __init__(self, shear=0.2):
-        super().__init__()
-        self.shear = shear
-
-    def call(self, image):
-        shear_matrix = tf.convert_to_tensor([[1.0, self.shear, 0.0], [0.0, 1.0, 0.0]], dtype=tf.float32)
-        return tf.raw_ops.Affine(image=image, scale=tf.constant([1.0, 1.0]), translate=tf.constant([0.0, 0.0]), shear=shear_matrix)
-
-class RandomContrast(Layer):
-    def __init__(self, lower=0.7, upper=1.3):
-        super().__init__()
-        self.lower = lower
-        self.upper = upper
-
-    def call(self, image):
-        contrast_factor = tf.random.uniform((), minval=self.lower, maxval=self.upper)
-        return tf.image.adjust_contrast(image, contrast_factor)
-
-class RandomSaturation(Layer):
-    def __init__(self, lower=0.7, upper=1.3):
-        super().__init__()
-        self.lower = lower
-        self.upper = upper
-
-    def call(self, image):
-        saturation_factor = tf.random.uniform((), minval=self.lower, maxval=self.upper)
-        return tf.image.adjust_saturation(image, saturation_factor)
 
 class RandomRGB(Layer):
     def __init__(self, prob=0.15):
@@ -101,9 +73,6 @@ def create_augment_layers():
             tf.keras.Input(shape=(32, 32, 3)),
             RandomFlip(mode="horizontal"),
             RandomRotation90(prob=0.2),
-            #RandomShear(shear=0.2),
-            #RandomContrast(lower=0.7, upper=1.3),
-            #RandomSaturation(lower=0.7, upper=1.3),
             #RandomRGB(prob=0.1),
             #RandomHue(factor=0.05),
             #RandomTranslation(height_factor=0.1, width_factor=0.1),
