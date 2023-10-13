@@ -1,6 +1,6 @@
 # CNN-Cifar 10 Project
 
-Welcome to the CNN-Cifar 10 project! This project showcases various versions of Convolutional Neural Networks (CNNs) trained on the Cifar 10 dataset. These CNN models are designed for image classification tasks. Below, you'll find essential information to understand, set up, and use this project.
+Welcome to the CNN-Cifar 10 project! This project showcases various versions of Convolutional Neural Networks (CNNs) trained on the Cifar 10 dataset. These CNN models are designed for image classification tasks. Below, you'll find essential information to understand, set up, and use this project. This project was mainly intended for learning purposes, as I wanted to deepen my understanding of CNNs as well as some other DL-concepts.
 
 ## Overview
 
