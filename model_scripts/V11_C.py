@@ -154,7 +154,7 @@ def preprocess_data(train_ds, test_ds):
     train_ds2 = train_ds.shuffle(buffer_size=8, reshuffle_each_iteration=True).map(resize_rescale)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).cache()
 
-    train_ds = mixed_ds.map().batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    train_ds = mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
 
     test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
@@ -198,11 +198,11 @@ def visualize_data(train_ds, test_ds, ds_info):
             )
             plt.imshow(image[n])
             plt.title(
-                f"Train - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}",
+                f"Train - {label[n][tf.argmax(label[n])]}",
                 fontsize=10,
             )
             plt.axis("off")
-    plt.suptitle("Train and Test Samples", fontsize=14)
+    plt.suptitle("Train and Test Samples -", fontsize=14)
     plt.show()
 
 
