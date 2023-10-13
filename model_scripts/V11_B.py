@@ -76,7 +76,7 @@ def create_augment_layers():
             RandomRGB(prob=0.05),
             RandomHue(factor=0.01),
             RandomTranslation(height_factor=0.1, width_factor=0.1),
-            #RandomZoom(height_factor=(-0.1, 0.1), width_factor=(-0.1, 0.1), fill_mode="reflect"),
+            RandomZoom(height_factor=(-0.05, 0.05), width_factor=(-0.05, 0.05), fill_mode="reflect"),
             RandomBrightness(factor=0.05, value_range=(0, 1)),
         ],
         name="augment_layers",
