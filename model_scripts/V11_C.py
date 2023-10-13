@@ -128,13 +128,16 @@ def main():
 ## Preprocessing the dataset
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
-    train_ds = (
-        train_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE)
-        .cache()
-        .shuffle(8, reshuffle_each_iteration=True)
+    train_ds1 = train_ds.shuffle(buffer_size=8, reshuffle_each_iteration=True).map(resize_rescale)
+    train_ds2 = train_ds.shuffle(buffer_size=8, reshuffle_each_iteration=True).map(resize_rescale)
+    mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).cache()
+
+    """
         .batch(BATCH_SIZE)
         .prefetch(AUTOTUNE)
     )
+    """
+
     test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
 
@@ -187,4 +190,4 @@ def visualize_data(train_ds, test_ds, ds_info):
 
 if __name__ == "__main__":
     main()
-    #plt.show()
+    # plt.show()
