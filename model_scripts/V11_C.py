@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
+import tensorflow_probability as tfp
 import utils
 from keras import backend as K
 from keras.callbacks import (
@@ -34,7 +35,17 @@ class_names = [
     "ship",
     "truck",
 ]
+def mixup(train_ds1, train_ds2):
+    (image1, label1), (image2, label2) = train_ds1, train_ds2
 
+
+    lamda = tfp.distributions.Beta(0.2,0.2)
+    lamda = lamda.sample(1)[0]
+    
+    
+    image = lamda*tf.cast(image1, dtype=tf.float32) + (1-lamda)*tf.cast(image2, dtype=tf.float32)
+    label = lamda*float(label1) + (1-lamda)*float(label2)
+    return image, label
 
 def main():
     # load dataset
@@ -132,11 +143,12 @@ def preprocess_data(train_ds, test_ds):
     train_ds2 = train_ds.shuffle(buffer_size=8, reshuffle_each_iteration=True).map(resize_rescale)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).cache()
 
-    """
+    train_ds =(
+        mixed_ds
+        .map()
         .batch(BATCH_SIZE)
         .prefetch(AUTOTUNE)
     )
-    """
 
     test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
