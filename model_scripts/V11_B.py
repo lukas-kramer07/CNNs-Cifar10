@@ -73,17 +73,15 @@ def create_augment_layers():
             tf.keras.Input(shape=(32, 32, 3)),
             RandomFlip(mode="horizontal"),
             #RandomRotation90(prob=0.15),
-            #RandomRGB(prob=0.1),
-            #RandomHue(factor=0.05),
+            RandomRGB(prob=0.05),
+            RandomHue(factor=0.01),
             RandomTranslation(height_factor=0.1, width_factor=0.1),
             #RandomZoom(height_factor=(-0.1, 0.1), width_factor=(-0.1, 0.1), fill_mode="reflect"),
-            RandomBrightness(factor=0.1, value_range=(0, 1)),
+            RandomBrightness(factor=0.05, value_range=(0, 1)),
         ],
         name="augment_layers",
     )
     return augment_layers
-
-
 
 def main():
     # load dataset
