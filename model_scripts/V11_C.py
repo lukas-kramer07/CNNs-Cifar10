@@ -36,6 +36,16 @@ class_names = [
     "truck",
 ]
 def mixup(train_ds1, train_ds2):
+    """mixup function to mix two train_datasets
+
+    Args:
+        train_ds1 (tf dataset): first dataset
+        train_ds2 (tf dataset): second dataset
+
+    Returns:
+        image: an image mixed up from the first and second dataset
+        label: a mixup label equivalent to the ratio of both images
+    """    
     (image1, label1), (image2, label2) = train_ds1, train_ds2
 
 
