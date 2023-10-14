@@ -151,7 +151,7 @@ def main():
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
     train_ds1 = train_ds.shuffle(buffer_size=8, reshuffle_each_iteration=True).map(resize_rescale)
-    train_ds2 = train_ds.shuffle(buffer_size=8, reshuffle_each_iteration=True).map(resize_rescale)
+    train_ds2 = train_ds.shuffle(buffer_size=14, reshuffle_each_iteration=True).map(resize_rescale)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).cache()
 
     train_ds = mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
@@ -168,7 +168,7 @@ def resize_rescale(Image, Label):
 
 def visualize_data(train_ds, test_ds, ds_info):
     num_images_to_display = 15
-    plt.figure(figsize=(num_images_to_display, num_images_to_display))
+    plt.figure(figsize=(num_images_to_display, num_images_to_display * 2))
     count = 0
     # Plot test samples
     for i in range(int(np.ceil(num_images_to_display / BATCH_SIZE))):
@@ -182,7 +182,7 @@ def visualize_data(train_ds, test_ds, ds_info):
             plt.imshow(image[n])
             plt.title(
                 f"Test - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}",
-                fontsize=10,
+                fontsize=8,
             )
             plt.axis("off")
             count += 1
@@ -197,12 +197,25 @@ def visualize_data(train_ds, test_ds, ds_info):
                 n + i + count + 1,
             )
             plt.imshow(image[n])
+            # Compute the indices of the top two values in the label tensor
+            top_k_values, top_k_indices = tf.math.top_k(label[n], k=2)
+
+            # Extract the second largest label's index
+            second_largest_index = top_k_indices[1]
+
+            # Convert the index to the corresponding label
+            second_largest_label = ds_info.features["label"].int2str(int(second_largest_index))
             plt.title(
-                f"Train - {label[n][tf.argmax(label[n])]}",
-                fontsize=10,
+                f"Train - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}: {label[n][top_k_indices[0]]:.3f}  \n and  {second_largest_label}: {label[n][second_largest_index]:.3f}",
+                fontsize=8,
             )
             plt.axis("off")
-    plt.suptitle('Train and Test Samples - class_names = ["airplane","automobile","bird","cat","deer","dog","frog","horse","ship","truck"]', fontsize=14)
+    plt.tight_layout(w_pad=6, h_pad=4)
+    plt.suptitle(
+        'Train and Test Samples - class_names = ["airplane","automobile","bird","cat","deer","dog","frog","horse","ship","truck"]',
+        fontsize=14,
+    )
+    plt.subplots_adjust(top=0.9)
     plt.show()
 
 
