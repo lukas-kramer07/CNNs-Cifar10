@@ -202,7 +202,7 @@ def visualize_data(train_ds, test_ds, ds_info):
                 fontsize=10,
             )
             plt.axis("off")
-    plt.suptitle("Train and Test Samples -", fontsize=14)
+    plt.suptitle('Train and Test Samples - class_names = ["airplane","automobile","bird","cat","deer","dog","frog","horse","ship","truck"]', fontsize=14)
     plt.show()
 
 
