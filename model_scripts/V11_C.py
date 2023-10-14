@@ -50,7 +50,7 @@ def mixup(train_ds1, train_ds2):
     """
     (image1, label1), (image2, label2) = train_ds1, train_ds2
 
-    lamda = tfp.distributions.Beta(0.7, 0.7)
+    lamda = tfp.distributions.Beta(0.5, 0.5)
     lamda = lamda.sample(1)[0]
 
     image = lamda * tf.cast(image1, dtype=tf.float32) + (1 - lamda) * tf.cast(image2, dtype=tf.float32)
@@ -97,7 +97,7 @@ def main():
             lr = (lr * tf.math.exp(-0.3)).numpy()
         return lr
 
-    scheduler_callback = LearningRateScheduler(scheduler)
+    scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
     checkpoint_callback = ModelCheckpoint(
         f"model_checkpoints/training_checkpoints/{model_name}",
         monitor="val_loss",
