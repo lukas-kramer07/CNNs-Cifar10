@@ -50,7 +50,7 @@ def mixup(train_ds1, train_ds2):
     """
     (image1, label1), (image2, label2) = train_ds1, train_ds2
 
-    lamda = tfp.distributions.Beta(0.5, 0.5)
+    lamda = tfp.distributions.Beta(0.3, 0.3)
     lamda = lamda.sample(1)[0]
 
     image = lamda * tf.cast(image1, dtype=tf.float32) + (1 - lamda) * tf.cast(image2, dtype=tf.float32)
