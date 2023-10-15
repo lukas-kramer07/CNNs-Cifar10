@@ -153,8 +153,10 @@ def preprocess_data(train_ds, test_ds):
     train_ds1 = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale)
     train_ds2 = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).cache()
-
-    train_ds = mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    train_ds = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale)
+    train_ds = (
+        mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).concatenate(train_ds).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    )
 
     test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
