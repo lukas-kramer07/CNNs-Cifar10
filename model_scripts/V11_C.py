@@ -50,7 +50,7 @@ def mixup(train_ds1, train_ds2):
     """
     (image1, label1), (image2, label2) = train_ds1, train_ds2
 
-    lamda = tfp.distributions.Beta(0.4, 0.4)
+    lamda = tfp.distributions.Beta(0.35, 0.35)
     lamda = lamda.sample(1)[0]
 
     image = lamda * tf.cast(image1, dtype=tf.float32) + (1 - lamda) * tf.cast(image2, dtype=tf.float32)
@@ -150,8 +150,8 @@ def main():
 ## Preprocessing the dataset
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
-    train_ds1 = train_ds.shuffle(buffer_size=8, reshuffle_each_iteration=True).map(resize_rescale)
-    train_ds2 = train_ds.shuffle(buffer_size=14, reshuffle_each_iteration=True).map(resize_rescale)
+    train_ds1 = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale)
+    train_ds2 = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).cache()
 
     train_ds = mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
