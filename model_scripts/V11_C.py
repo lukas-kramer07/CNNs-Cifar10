@@ -126,7 +126,7 @@ def main():
     # train for 20 epochs
     history = model.fit(
         train_ds,
-        epochs=10,
+        epochs=20,
         validation_data=test_ds,
         callbacks=[
             es_callback,
@@ -150,10 +150,11 @@ def main():
 ## Preprocessing the dataset
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
+    MIXED_DS_RATIO = 0.5
     train_ds1 = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale)
     train_ds2 = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale)
-    mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).cache()
-    train_ds = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale).cache()
+    mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2)).take(int(len(train_ds)*MIXED_DS_RATIO))
+    train_ds = train_ds.shuffle(buffer_size=32, reshuffle_each_iteration=True).map(resize_rescale).skip(int(len(train_ds)*MIXED_DS_RATIO))
     train_ds = (
         mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).concatenate(train_ds).shuffle(buffer_size=32, reshuffle_each_iteration=True).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     )
