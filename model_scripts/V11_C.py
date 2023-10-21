@@ -150,15 +150,11 @@ def main():
 ## Preprocessing the dataset
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
-    MIXED_DS_RATIO = 0.875
-    train_ds = train_ds.map(resize_rescale)
-    train_ds_mixed = train_ds.take(int(len(train_ds) * MIXED_DS_RATIO))
+    train_ds_mixed = train_ds.map(resize_rescale)
     train_ds1 = train_ds_mixed.shuffle(buffer_size=32)
     train_ds2 = train_ds_mixed.shuffle(buffer_size=32)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2))
-
-    train_ds = train_ds.skip(int(len(train_ds) * MIXED_DS_RATIO))
-    train_ds = mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).concatenate(train_ds)
+    train_ds = mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE)
     train_ds = (
         train_ds.shuffle(buffer_size=10000)
         .map(augment, num_parallel_calls=AUTOTUNE)
