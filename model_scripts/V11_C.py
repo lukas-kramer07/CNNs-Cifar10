@@ -151,13 +151,21 @@ def main():
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
     MIXED_DS_RATIO = 0.4
-    train_ds1 = train_ds.take(int(len(train_ds)*MIXED_DS_RATIO)).map(resize_rescale).shuffle(buffer_size=32, reshuffle_each_iteration=True)
-    train_ds2 = train_ds.take(int(len(train_ds)*MIXED_DS_RATIO)).map(resize_rescale).shuffle(buffer_size=32, reshuffle_each_iteration=True)
+    train_ds=train_ds.map(resize_rescale)
+    train_ds_mixed = train_ds.take(int(len(train_ds) * MIXED_DS_RATIO))
+    train_ds1 = train_ds_mixed.shuffle(buffer_size=32).cache()
+    train_ds2 = train_ds_mixed.shuffle(buffer_size=32).cache()
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2))
-    train_ds = train_ds.skip(int(len(train_ds)*MIXED_DS_RATIO)).map(resize_rescale)
+
+    train_ds = train_ds.skip(int(len(train_ds) * MIXED_DS_RATIO))
+    train_ds = mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).concatenate(train_ds)
     train_ds = (
-        mixed_ds.map(mixup, num_parallel_calls=AUTOTUNE).concatenate(train_ds).cache().shuffle(buffer_size=10000, reshuffle_each_iteration=True).map(augment, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+        train_ds.shuffle(buffer_size=10000)
+        .map(augment, num_parallel_calls=AUTOTUNE)
+        .batch(BATCH_SIZE)
+        .prefetch(AUTOTUNE)
     )
+
     test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
 
