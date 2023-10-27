@@ -147,10 +147,27 @@ def resize_rescale(Image, Label):
 
 
 @tf.function
-def augment(Image, Label):
-    return Image, Label
+def cutmix(train_ds1, train_ds2):
+    (image1, label1), (image2, label2) = train_ds1, train_ds2
 
+    lamda = tfp.distributions.Beta(0.2,0.2).sample(1)[0]
 
+    r_x, r_y, r_w, r_h = box(lamda)
+    crop_2 = tf.image.crop_to_bounding_box(image2, r_y, r_x, r_h, r_w)
+    pad2 = tf.image.pad_to_bounding_box(crop_2, r_y, r_x, IM_SIZE, IM_SIZE)
+
+    crop_1 = tf.image.crop_to_bounding_box(image1, r_y, r_x, r_h, r_w)
+    pad1 = tf.image.pad_to_bounding_box(crop_1, r_y, r_x, IM_SIZE, IM_SIZE)
+
+    image = image1 - pad1 + pad2
+    
+    lamda = 1 - (r_w*r_h)/(IM_SIZE*IM_SIZE)
+
+    label = float(lamda)*float(label1) + float((1-lamda))*float(label2)
+
+    return image, label
+
+@tf.function
 def box(lamda):
     r_x = tf.cast(tfp.distributions.Uniform(0, IM_SIZE).sample(1)[0], dtype=tf.int32)
     r_y = tf.cast(tfp.distributions.Uniform(0, IM_SIZE).sample(1)[0], dtype=tf.int32)
@@ -172,6 +189,7 @@ def box(lamda):
         r_h = 1
 
     return r_x, r_y, r_w, r_h
+
 
 
 def visualize_data(train_ds, test_ds, ds_info):
