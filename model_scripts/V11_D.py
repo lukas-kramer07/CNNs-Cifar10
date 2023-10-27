@@ -128,14 +128,12 @@ def main():
 ## Preprocessing the dataset
 def preprocess_data(train_ds, test_ds):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
-    train_ds = (
-        train_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE)
-        .cache()
-        .shuffle(8, reshuffle_each_iteration=True)
-        .map(augment, num_parallel_calls=AUTOTUNE)
-        .batch(BATCH_SIZE)
-        .prefetch(AUTOTUNE)
-    )
+    train_ds_mixed = train_ds.map(resize_rescale)
+    train_ds1 = train_ds_mixed.shuffle(buffer_size=32)
+    train_ds2 = train_ds_mixed.shuffle(buffer_size=32)
+    mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2))
+    train_ds = mixed_ds.map(cutmix, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+
     test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
 
@@ -150,7 +148,7 @@ def resize_rescale(Image, Label):
 def cutmix(train_ds1, train_ds2):
     (image1, label1), (image2, label2) = train_ds1, train_ds2
 
-    lamda = tfp.distributions.Beta(0.2,0.2).sample(1)[0]
+    lamda = tfp.distributions.Beta(0.2, 0.2).sample(1)[0]
 
     r_x, r_y, r_w, r_h = box(lamda)
     crop_2 = tf.image.crop_to_bounding_box(image2, r_y, r_x, r_h, r_w)
@@ -160,12 +158,13 @@ def cutmix(train_ds1, train_ds2):
     pad1 = tf.image.pad_to_bounding_box(crop_1, r_y, r_x, IM_SIZE, IM_SIZE)
 
     image = image1 - pad1 + pad2
-    
-    lamda = 1 - (r_w*r_h)/(IM_SIZE*IM_SIZE)
 
-    label = float(lamda)*float(label1) + float((1-lamda))*float(label2)
+    lamda = 1 - (r_w * r_h) / (IM_SIZE * IM_SIZE)
+
+    label = float(lamda) * float(label1) + float((1 - lamda)) * float(label2)
 
     return image, label
+
 
 @tf.function
 def box(lamda):
@@ -189,7 +188,6 @@ def box(lamda):
         r_h = 1
 
     return r_x, r_y, r_w, r_h
-
 
 
 def visualize_data(train_ds, test_ds, ds_info):
