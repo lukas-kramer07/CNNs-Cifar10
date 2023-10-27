@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
+import tensorflow_probability as tfp
 import utils
 from keras import backend as K
 from keras.callbacks import (
@@ -147,8 +148,30 @@ def resize_rescale(Image, Label):
 
 @tf.function
 def augment(Image, Label):
-
     return Image, Label
+
+
+def box(lamda):
+    r_x = tf.cast(tfp.distributions.Uniform(0, IM_SIZE).sample(1)[0], dtype=tf.int32)
+    r_y = tf.cast(tfp.distributions.Uniform(0, IM_SIZE).sample(1)[0], dtype=tf.int32)
+
+    r_w = tf.cast(IM_SIZE * tf.math.sqrt(1 - lamda), dtype=tf.int32)
+    r_h = tf.cast(IM_SIZE * tf.math.sqrt(1 - lamda), dtype=tf.int32)
+
+    r_x = tf.clip_by_value(r_x - r_w // 2, 0, IM_SIZE)
+    r_y = tf.clip_by_value(r_y - r_h // 2, 0, IM_SIZE)
+
+    r_x_b = tf.clip_by_value(r_x + r_w // 2, 0, IM_SIZE)
+    r_y_b = tf.clip_by_value(r_y + r_h // 2, 0, IM_SIZE)
+
+    r_w = r_x_b - r_x
+    if r_w == 0:
+        r_w = 1
+    r_h = r_y_b - r_y
+    if r_h == 0:
+        r_h = 1
+
+    return r_x, r_y, r_w, r_h
 
 
 def visualize_data(train_ds, test_ds, ds_info):
@@ -193,4 +216,4 @@ def visualize_data(train_ds, test_ds, ds_info):
 
 if __name__ == "__main__":
     main()
-    #plt.show()
+    # plt.show()
