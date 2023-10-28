@@ -148,7 +148,7 @@ def resize_rescale(Image, Label):
 def cutmix(train_ds1, train_ds2):
     (image1, label1), (image2, label2) = train_ds1, train_ds2
 
-    lamda = tfp.distributions.Beta(0.2, 0.2).sample(1)[0]
+    lamda = tfp.distributions.Beta(0.3, 0.3).sample(1)[0]
 
     r_x, r_y, r_w, r_h = box(lamda)
     crop_2 = tf.image.crop_to_bounding_box(image2, r_y, r_x, r_h, r_w)
