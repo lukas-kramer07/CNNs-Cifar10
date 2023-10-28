@@ -221,11 +221,20 @@ def visualize_data(train_ds, test_ds, ds_info):
                 n + i + count + 1,
             )
             plt.imshow(image[n])
+            # Compute the indices of the top two values in the label tensor
+            top_k_values, top_k_indices = tf.math.top_k(label[n], k=2)
+
+            # Extract the second largest label's index
+            second_largest_index = top_k_indices[1]
+
+            # Convert the index to the corresponding label
+            second_largest_label = ds_info.features["label"].int2str(int(second_largest_index))
             plt.title(
-                f"Train - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}",
-                fontsize=10,
+                f"Train - {ds_info.features['label'].int2str(int(tf.argmax(label[n])))}: {label[n][top_k_indices[0]]:.3f}  \n and  {second_largest_label}: {label[n][second_largest_index]:.3f}",
+                fontsize=8,
             )
             plt.axis("off")
+    plt.tight_layout(w_pad=6, h_pad=4)
     plt.suptitle("Train and Test Samples", fontsize=14)
     plt.show()
 
