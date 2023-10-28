@@ -2,7 +2,7 @@
   uses V2 model and V10 callbacks as well as cutmix augmentation 
 """
 import datetime
-
+from V11_A import augment
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -132,7 +132,7 @@ def preprocess_data(train_ds, test_ds):
     train_ds1 = train_ds_mixed.shuffle(buffer_size=32)
     train_ds2 = train_ds_mixed.shuffle(buffer_size=32)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2))
-    train_ds = mixed_ds.map(cutmix, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    train_ds = mixed_ds.map(cutmix, num_parallel_calls=AUTOTUNE).map(augment, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
 
     test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
     return train_ds, test_ds
