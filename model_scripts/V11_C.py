@@ -222,9 +222,9 @@ def visualize_data(train_ds, test_ds, ds_info):
         fontsize=14,
     )
     plt.subplots_adjust(top=0.9)
-    plt.show()
+    #plt.show()
 
 
 if __name__ == "__main__":
     main()
-    plt.show()
+    #plt.show()
