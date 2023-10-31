@@ -155,20 +155,19 @@ def augment(image, label):
 def aug_albument(image):
     transform = create_transform()
     new_image = transform(image=image)['image']
-    return tf.cast(new_image/255., dtype=tf.float32)
+    return new_image
 
 def create_transform():
     transforms = A.Compose([
-        A.Resize(IM_SIZE, IM_SIZE), 
         A.OneOf([A.HorizontalFlip(),
                 A.VerticalFlip()], p=0.3),
         A.RandomRotate90(p=0.3),
         #A.RandomGridShuffle(grid=(3,3), p=0.33),
-        A.RandomBrightnessContrast(brightness_limit=0.1,
-                                contrast_limit=0.1,
-                                p=0.3),
+        #A.RandomBrightnessContrast(brightness_limit=0.1,
+        #                        contrast_limit=0.1,
+        #                        p=0.3),
         #A.Cutout(),
-        A.Sharpen(alpha=(0.1, 0.3), p=0.23)
+        #A.Sharpen(alpha=(0.1, 0.3), p=0.23)
     ])
     return transforms
 
@@ -209,9 +208,9 @@ def visualize_data(train_ds, test_ds, ds_info):
             )
             plt.axis("off")
     plt.suptitle("Train and Test Samples", fontsize=14)
-    # plt.show()
+    plt.show()
 
 
 if __name__ == "__main__":
     main()
-    # plt.show()
+    plt.show()
