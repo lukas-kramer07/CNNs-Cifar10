@@ -162,10 +162,10 @@ def create_transform():
         A.HorizontalFlip(p=0.5),
         #A.RandomGridShuffle(grid=(3,3), p=0.33),
         #A.RandomBrightnessContrast(brightness_limit=0.1,
-         #                       contrast_limit=0.1,
-         #                       p=0.3),
+        #                       contrast_limit=0.1,
+        #                       p=0.3),
         #A.Cutout(),
-        #A.Sharpen(alpha=(0.1, 0.3), p=0.23)
+        A.Sharpen(alpha=(0.1, 0.3), p=0.25)
     ])
     return transforms
 
