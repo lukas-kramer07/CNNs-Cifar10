@@ -158,14 +158,12 @@ def aug_albument(image):
     return new_image
 
 def create_transform():
-    transforms = A.Compose([
-        #A.OneOf([A.HorizontalFlip(),
-        #        A.VerticalFlip()], p=0.3),
-        #A.RandomRotate90(p=0.3),
+    transforms = A.Compose([ 
+        A.HorizontalFlip(p=0.5),
         #A.RandomGridShuffle(grid=(3,3), p=0.33),
         #A.RandomBrightnessContrast(brightness_limit=0.1,
-        #                        contrast_limit=0.1,
-        #                        p=0.3),
+         #                       contrast_limit=0.1,
+         #                       p=0.3),
         #A.Cutout(),
         #A.Sharpen(alpha=(0.1, 0.3), p=0.23)
     ])
