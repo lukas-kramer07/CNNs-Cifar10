@@ -2,8 +2,8 @@
   uses V2 model and V10 callbacks as well as augmentation using ds_map, an augment 
   function and tf.image augmentation
 """
+import albumentations as A 
 import datetime
-
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -158,6 +158,20 @@ def augment(Image, Label):
     Image = tf.image.random_saturation(Image, 0.9, 1.1)
     return Image, Label
 
+def create_transform():
+    transforms = A.Compose([
+        A.Resize(IM_SIZE, IM_SIZE), 
+        A.OneOf([A.HorizontalFlip(),
+                A.VerticalFlip()], p=0.3),
+        A.RandomRotate90(p=0.3),
+        #A.RandomGridShuffle(grid=(3,3), p=0.33),
+        A.RandomBrightnessContrast(brightness_limit=0.1,
+                                contrast_limit=0.1,
+                                p=0.3),
+        #A.Cutout(),
+        A.Sharpen(alpha=(0.1, 0.3), p=0.23)
+    ])
+    return transforms
 
 def visualize_data(train_ds, test_ds, ds_info):
     num_images_to_display = 15
@@ -196,9 +210,9 @@ def visualize_data(train_ds, test_ds, ds_info):
             )
             plt.axis("off")
     plt.suptitle("Train and Test Samples", fontsize=14)
-    #plt.show()
+    # plt.show()
 
 
 if __name__ == "__main__":
     main()
-    #plt.show()
+    # plt.show()
