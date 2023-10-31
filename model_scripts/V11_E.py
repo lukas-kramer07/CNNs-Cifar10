@@ -158,6 +158,12 @@ def augment(Image, Label):
     Image = tf.image.random_saturation(Image, 0.9, 1.1)
     return Image, Label
 
+
+def aug_albument(image):
+    transform = create_transform()
+    new_image = transform(image=image)['image']
+    return tf.cast(new_image/255., dtype=tf.float32)
+
 def create_transform():
     transforms = A.Compose([
         A.Resize(IM_SIZE, IM_SIZE), 
