@@ -164,7 +164,8 @@ def create_transform():
                                contrast_limit=0.1,
                                p=0.3),
         A.Cutout(num_holes=3, p=0.33),
-        A.Sharpen(alpha=(0.1, 0.3), p=0.25)
+        A.Sharpen(alpha=(0.1, 0.3), p=0.25),
+        A.RandomSunFlare(p=0.5, src_radius=3)
     ])
     return transforms
 
