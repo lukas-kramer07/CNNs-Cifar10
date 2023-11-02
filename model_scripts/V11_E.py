@@ -159,13 +159,11 @@ def aug_albument(image):
 
 def create_transform():
     transforms = A.Compose([ 
+        # 'mechanical' transformations
         A.HorizontalFlip(p=0.5),
-        A.RandomBrightnessContrast(brightness_limit=0.1,
-                               contrast_limit=0.1,
-                               p=0.3),
-        A.Cutout(num_holes=3, p=0.33),
-        A.Sharpen(alpha=(0.1, 0.3), p=0.25),
-        A.RandomSunFlare(p=0.5, src_radius=3)
+        A.RandomResizedCrop(IM_SIZE,IM_SIZE,scale=(0.75,1),p=0.75)
+
+        
     ])
     return transforms
 
