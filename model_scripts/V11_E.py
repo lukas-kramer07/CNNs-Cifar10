@@ -164,8 +164,10 @@ def create_transform():
         A.RandomResizedCrop(IM_SIZE,IM_SIZE,scale=(0.75,1),p=0.75),
 
         # 'image quality' transformations
-        A.RandomBrightnessContrast(brightness_limit=0.1, contrast_limit=0.1, p=0.25)
-        
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
+        A.HueSaturationValue(hue_shift_limit=0.04, sat_shift_limit=0.1,
+                       val_shift_limit=0.1, p=.9),
+        A.RandomGamma(gamma_limit=(80,120), p=.5),
     ])
     return transforms
 
