@@ -19,7 +19,7 @@ from keras.callbacks import (
 )
 from V2 import create_model
 
-model_name = "V11_A"
+model_name = "V11_D"
 IM_SIZE = 32
 BATCH_SIZE = 32
 class_names = [
