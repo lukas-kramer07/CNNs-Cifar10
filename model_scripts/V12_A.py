@@ -1,16 +1,18 @@
-'''
+"""
 This is the first of three scripts to improve the model architecture using HP-search. This script will use the grid search method
-'''
+"""
 
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from tensorboard.plugins.hparams import api as hp
 from V11_E import preprocess_data
 from V11_E import visualize_data
+
 IM_SIZE = 32
 BATCH_SIZE = 32
 
+
 def main():
+    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then starts a grid search for the best hparams for the model."""
     # load dataset
     (train_ds, test_ds), ds_info = tfds.load("cifar10", split=["train", "test"], as_supervised=True, with_info=True)
     # preprocess
