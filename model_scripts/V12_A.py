@@ -2,6 +2,7 @@
 This is the first of three scripts to improve the model architecture using HP-search. This script will use the grid search method
 """
 
+import os
 from pandas import Categorical
 from tensorboard.plugins.hparams import api as hp
 import tensorflow as tf
@@ -62,7 +63,7 @@ def main():
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
-
+    runall(base_logdir='.logs/hp')
 
 def build_model(hparams):
     model = tf.keras.Sequential(
@@ -139,14 +140,38 @@ def build_model(hparams):
     return model
 
 
-def run(run_id, base_logdir, hparams):
-    # TODO
-    pass
+def run(run_id, base_logdir, hparams, train_ds, val_ds):
+    logdir = os.path.join(base_logdir, run_id)
+    t_callback = tf.keras.callbacks.TensorBoard(logdir)
+    h_callback = hp.KerasCallback(logdir=logdir, hparams=hparams)
+    model = build_model(hparams)
+    model.fit(train_ds, validation_data=[val_ds], epochs=2, callbacks=[t_callback, h_callback])
 
 
-def runall(base_logdir):
-    pass
-
+def runall(base_logdir, train_ds, val_ds):
+    with tf.summary.create_file_writer(base_logdir).as_default():
+        hp.hparams_config(hparams=HPARAMS, metrics=METRICS)
+    
+    session_num = 0
+    for num_units_1 in HP_NUM_UNITS1.domain.values:
+        for num_units_2 in HP_NUM_UNITS2.domain.values:
+            for nums_units_3 in HP_NUM_UNITS3.domain.values:
+                for dropout in HP_DROPOUT.domain.values:
+                    for regularization in HP_REGULARIZATION_RATE:
+                        for lr in HP_LEARNING_RATE:
+                            hparams = {
+                                HP_NUM_UNITS1: num_units_1,
+                                HP_NUM_UNITS2: num_units_2,
+                                HP_NUM_UNITS1: nums_units_3,
+                                HP_DROPOUT: dropout,
+                                HP_REGULARIZATION_RATE: regularization,
+                                HP_LEARNING_RATE: lr
+                            } 
+                            run_name = "run-%d" % session_num
+                            print('--- Starting trial: %s' % run_name)
+                            print({h.name: hparams[h] for h in hparams})
+                            run(base_logdir=base_logdir, run_id=run_name, hparams=hparams, train_ds=train_ds, val_ds=val_ds)
+                            session_num += 1
 
 if __name__ == "__main__":
     main()
