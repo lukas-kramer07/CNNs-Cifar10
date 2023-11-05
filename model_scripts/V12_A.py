@@ -2,6 +2,7 @@
 This is the first of three scripts to improve the model architecture using HP-search. This script will use the grid search method
 """
 
+from matplotlib import pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from V11_E import preprocess_data
@@ -19,3 +20,8 @@ def main():
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
+    
+
+if __name__ == '__main__':
+    main()
+    
