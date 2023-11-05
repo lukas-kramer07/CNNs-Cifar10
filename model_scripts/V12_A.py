@@ -1,17 +1,58 @@
 """
 This is the first of three scripts to improve the model architecture using HP-search. This script will use the grid search method
 """
+
+from pandas import Categorical
+from tensorboard.plugins.hparams import api as hp
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from V11_E import preprocess_data
 from V11_E import visualize_data
 from keras.layers import Conv2D, MaxPool2D, Dense, InputLayer, Flatten, BatchNormalization, Dropout
 from keras.optimizers import Adam
-from keras.losses import BinaryCrossentropy
+from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
 BATCH_SIZE = 32
 
+#HPARAMS
+HP_NUM_UNITS1 = hp.HParam('num_units_1', hp.Discrete([64,128]))
+HP_NUM_UNITS2 = hp.HParam('num_units_2', hp.Discrete([32,64]))
+HP_NUM_UNITS3 = hp.HParam('num_units_3', hp.Discrete([16,32]))
+HP_REGULARIZATION_RATE = hp.HParam('regularization_rate', hp.Discrete([0.001,0.1]))
+HP_DROPOUT = hp.HParam('dropout', hp.Discrete([0.2,0.3]))
+HP_LEARNING_RATE = hp.HParam('learning_rate', hp.Discrete([0.001,0.01,0.0001]))
+
+HPARAMS = [
+    HP_NUM_UNITS1,
+    HP_NUM_UNITS2,
+    HP_NUM_UNITS3,
+    HP_REGULARIZATION_RATE,
+    HP_DROPOUT,
+    HP_LEARNING_RATE,
+]
+METRICS = [
+    hp.Metric(
+        "epoch_accuracy",
+        group="validation",
+        display_name="accuracy (val.)",
+    ),
+    hp.Metric(
+        "epoch_loss",
+        group="validation",
+        display_name="loss (val.)",
+    ),
+    hp.Metric(
+        "batch_accuracy",
+        group="train",
+        display_name="accuracy (train)",
+    ),
+    hp.Metric(
+        "batch_loss",
+        group="train",
+        display_name="loss (train)",
+    ),
+]
 
 def main():
     """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then starts a grid search for the best hparams for the model."""
@@ -89,11 +130,11 @@ def build_model(hparams):
                 kernel_regularizer=tf.keras.regularizers.L2(hparams[HP_REGULARIZATION_RATE]),
             ),
             BatchNormalization(),
-            Dense(1, activation="sigmoid"),
+            Dense(10, activation="softmax"),
         ]
     )
     model.compile(
-        optimizer=Adam(learning_rate=hparams[HP_LEARNING_RATE]), loss=BinaryCrossentropy(), metrics=["accuracy"]
+        optimizer=Adam(learning_rate=hparams[HP_LEARNING_RATE]), loss=CategoricalCrossentropy(), metrics=["accuracy"]
     )
     return model
 
@@ -103,7 +144,7 @@ def run(run_id, base_logdir, hparams):
     pass
 
 
-def runall(base_logdir, METRICS, HPARAMS):
+def runall(base_logdir):
     pass
 
 
