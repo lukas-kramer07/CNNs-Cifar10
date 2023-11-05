@@ -63,7 +63,7 @@ def main():
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
-    runall(base_logdir='.logs/hp')
+    runall(base_logdir='logs/hp', val_ds=test_ds, train_ds=train_ds)
 
 def build_model(hparams):
     model = tf.keras.Sequential(
@@ -143,7 +143,7 @@ def build_model(hparams):
 def run(run_id, base_logdir, hparams, train_ds, val_ds):
     logdir = os.path.join(base_logdir, run_id)
     t_callback = tf.keras.callbacks.TensorBoard(logdir)
-    h_callback = hp.KerasCallback(logdir=logdir, hparams=hparams)
+    h_callback = hp.KerasCallback(logdir, hparams)
     model = build_model(hparams)
     model.fit(train_ds, validation_data=[val_ds], epochs=2, callbacks=[t_callback, h_callback])
 
@@ -157,12 +157,12 @@ def runall(base_logdir, train_ds, val_ds):
         for num_units_2 in HP_NUM_UNITS2.domain.values:
             for nums_units_3 in HP_NUM_UNITS3.domain.values:
                 for dropout in HP_DROPOUT.domain.values:
-                    for regularization in HP_REGULARIZATION_RATE:
-                        for lr in HP_LEARNING_RATE:
+                    for regularization in HP_REGULARIZATION_RATE.domain.values:
+                        for lr in HP_LEARNING_RATE.domain.values:
                             hparams = {
                                 HP_NUM_UNITS1: num_units_1,
                                 HP_NUM_UNITS2: num_units_2,
-                                HP_NUM_UNITS1: nums_units_3,
+                                HP_NUM_UNITS3: nums_units_3,
                                 HP_DROPOUT: dropout,
                                 HP_REGULARIZATION_RATE: regularization,
                                 HP_LEARNING_RATE: lr
