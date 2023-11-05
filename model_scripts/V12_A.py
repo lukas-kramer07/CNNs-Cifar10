@@ -20,8 +20,16 @@ def main():
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
-    
 
+def train_model(hparams, rundir):
+    #TODO
+    pass
+def run(run_id, base_logdir, hparams):
+    #TODO
+    pass
+def runall(base_logdir): 
+    #TODO  
+    pass
 if __name__ == '__main__':
     main()
     
