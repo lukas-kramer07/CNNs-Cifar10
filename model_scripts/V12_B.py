@@ -1,14 +1,14 @@
 """
-This is the first of three scripts to improve the model architecture using HP-search. This script will use the grid search method
+This is the second of three scripts to improve the model architecture using HP-search. This script will use the random search method
 """
 
 import os
-from pandas import Categorical
 from tensorboard.plugins.hparams import api as hp
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from V11_E import preprocess_data
 from V11_E import visualize_data
+from V12_A import build_model
 from keras.layers import (
     Conv2D,
     MaxPool2D,
@@ -75,95 +75,6 @@ def main():
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
     runall(base_logdir="logs/hp", val_ds=test_ds, train_ds=train_ds)
-
-
-def build_model(hparams):
-    model = tf.keras.Sequential(
-        [
-            # Input
-            InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)),
-            #
-            # First Convolutional block
-            Conv2D(
-                filters=16,
-                kernel_size=3,
-                strides=1,
-                padding="valid",
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
-            ),
-            BatchNormalization(),
-            MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=hparams[HP_DROPOUT]),
-            #
-            # Second Convolutional block
-            Conv2D(
-                filters=32,
-                kernel_size=3,
-                strides=1,
-                padding="valid",
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
-            ),
-            BatchNormalization(),
-            MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=hparams[HP_DROPOUT]),
-            #
-            # Third Convolutional block
-            Conv2D(
-                filters=64,
-                kernel_size=3,
-                strides=1,
-                padding="valid",
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
-            ),
-            BatchNormalization(),
-            MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=hparams[HP_DROPOUT]),
-            # Dense block
-            Flatten(),
-            Dense(
-                hparams[HP_NUM_UNITS1],
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
-            ),
-            BatchNormalization(),
-            Dropout(rate=hparams[HP_DROPOUT]),
-            Dense(
-                hparams[HP_NUM_UNITS2],
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
-            ),
-            BatchNormalization(),
-            Dropout(rate=hparams[HP_DROPOUT]),
-            Dense(
-                hparams[HP_NUM_UNITS3],
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
-            ),
-            BatchNormalization(),
-            Dense(10, activation="softmax"),
-        ]
-    )
-    model.compile(
-        optimizer=Adam(learning_rate=hparams[HP_LEARNING_RATE]),
-        loss=CategoricalCrossentropy(),
-        metrics=["accuracy"],
-    )
-    return model
 
 
 def run(run_id, base_logdir, hparams, train_ds, val_ds):
