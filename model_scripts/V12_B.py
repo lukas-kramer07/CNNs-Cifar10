@@ -28,12 +28,12 @@ BATCH_SIZE = 32
 NUM_SESSIONS = 100
 
 # HPARAMS
-HP_NUM_UNITS1 = hp.HParam("num_units_1", hp.RealInterval([64, 256]))
-HP_NUM_UNITS2 = hp.HParam("num_units_2", hp.RealInterval([32, 128]))
-HP_NUM_UNITS3 = hp.HParam("num_units_3", hp.RealInterval([16, 64]))
-HP_REGULARIZATION_RATE = hp.HParam("regularization_rate", hp.RealInterval([0.001, 0.3]))
-HP_DROPOUT = hp.HParam("dropout", hp.RealInterval([0.01, 0.3]))
-HP_LEARNING_RATE = hp.HParam("learning_rate", hp.RealInterval([0.01, 0.0001]))
+HP_NUM_UNITS1 = hp.HParam("num_units_1", hp.IntInterval(64, 256))
+HP_NUM_UNITS2 = hp.HParam("num_units_2", hp.IntInterval(32, 128))
+HP_NUM_UNITS3 = hp.HParam("num_units_3", hp.IntInterval(16, 64))
+HP_REGULARIZATION_RATE = hp.HParam("regularization_rate", hp.RealInterval(0.001, 0.3))
+HP_DROPOUT = hp.HParam("dropout", hp.RealInterval(0.01, 0.3))
+HP_LEARNING_RATE = hp.HParam("learning_rate", hp.RealInterval(0.01, 0.0001))
 
 HPARAMS = [
     HP_NUM_UNITS1,
