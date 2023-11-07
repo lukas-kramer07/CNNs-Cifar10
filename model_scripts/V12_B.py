@@ -3,6 +3,7 @@ This is the second of three scripts to improve the model architecture using HP-s
 """
 
 import os
+import random
 from tensorboard.plugins.hparams import api as hp
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -24,13 +25,15 @@ from keras.losses import CategoricalCrossentropy
 IM_SIZE = 32
 BATCH_SIZE = 32
 
+NUM_SESSIONS = 100
+
 # HPARAMS
-HP_NUM_UNITS1 = hp.HParam("num_units_1", hp.Discrete([64, 128]))
-HP_NUM_UNITS2 = hp.HParam("num_units_2", hp.Discrete([32, 64]))
-HP_NUM_UNITS3 = hp.HParam("num_units_3", hp.Discrete([16, 32]))
-HP_REGULARIZATION_RATE = hp.HParam("regularization_rate", hp.Discrete([0.001, 0.1]))
-HP_DROPOUT = hp.HParam("dropout", hp.Discrete([0.2, 0.3]))
-HP_LEARNING_RATE = hp.HParam("learning_rate", hp.Discrete([0.001, 0.01, 0.0001]))
+HP_NUM_UNITS1 = hp.HParam("num_units_1", hp.RealInterval([64, 256]))
+HP_NUM_UNITS2 = hp.HParam("num_units_2", hp.RealInterval([32, 128]))
+HP_NUM_UNITS3 = hp.HParam("num_units_3", hp.RealInterval([16, 64]))
+HP_REGULARIZATION_RATE = hp.HParam("regularization_rate", hp.RealInterval([0.001, 0.3]))
+HP_DROPOUT = hp.HParam("dropout", hp.RealInterval([0.01, 0.3]))
+HP_LEARNING_RATE = hp.HParam("learning_rate", hp.RealInterval([0.01, 0.0001]))
 
 HPARAMS = [
     HP_NUM_UNITS1,
@@ -74,7 +77,12 @@ def main():
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
-    runall(base_logdir="logs/hp", val_ds=test_ds, train_ds=train_ds)
+    runall(
+        num_sessions=NUM_SESSIONS,
+        base_logdir="logs/hp",
+        val_ds=test_ds,
+        train_ds=train_ds,
+    )
 
 
 def run(run_id, base_logdir, hparams, train_ds, val_ds):
@@ -89,36 +97,22 @@ def run(run_id, base_logdir, hparams, train_ds, val_ds):
     )
 
 
-def runall(base_logdir, train_ds, val_ds):
+def runall(num_sessions, base_logdir, train_ds, val_ds):
     with tf.summary.create_file_writer(base_logdir).as_default():
         hp.hparams_config(hparams=HPARAMS, metrics=METRICS)
-
-    session_num = 0
-    for num_units_1 in HP_NUM_UNITS1.domain.values:
-        for num_units_2 in HP_NUM_UNITS2.domain.values:
-            for nums_units_3 in HP_NUM_UNITS3.domain.values:
-                for dropout in HP_DROPOUT.domain.values:
-                    for regularization in HP_REGULARIZATION_RATE.domain.values:
-                        for lr in HP_LEARNING_RATE.domain.values:
-                            hparams = {
-                                HP_NUM_UNITS1: num_units_1,
-                                HP_NUM_UNITS2: num_units_2,
-                                HP_NUM_UNITS3: nums_units_3,
-                                HP_DROPOUT: dropout,
-                                HP_REGULARIZATION_RATE: regularization,
-                                HP_LEARNING_RATE: lr,
-                            }
-                            run_name = "run-%d" % session_num
-                            print("--- Starting trial: %s" % run_name)
-                            print({h.name: hparams[h] for h in hparams})
-                            run(
-                                base_logdir=base_logdir,
-                                run_id=run_name,
-                                hparams=hparams,
-                                train_ds=train_ds,
-                                val_ds=val_ds,
-                            )
-                            session_num += 1
+    rng = random.Random(0)
+    for session_id in range(num_sessions):
+        hparams = {h: h.domain.sample_uniform(rng) for h in HPARAMS}
+        run_name = f"run-{session_id}"
+        print(f"--- Starting trial: {run_name}/{num_sessions}")
+        print({h.name: hparams[h] for h in hparams})
+        run(
+            base_logdir=base_logdir,
+            run_id=run_name,
+            hparams=hparams,
+            train_ds=train_ds,
+            val_ds=val_ds,
+        )
 
 
 if __name__ == "__main__":
