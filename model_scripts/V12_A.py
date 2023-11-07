@@ -145,7 +145,7 @@ def run(run_id, base_logdir, hparams, train_ds, val_ds):
     t_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir, update_freq=500, profile_batch=0)
     h_callback = hp.KerasCallback(logdir, hparams)
     model = build_model(hparams)
-    result = model.fit(train_ds, validation_data=[val_ds], epochs=2, callbacks=[t_callback, h_callback])
+    result = model.fit(train_ds, validation_data=[val_ds], epochs=4, callbacks=[t_callback, h_callback])
 
 
 def runall(base_logdir, train_ds, val_ds):
