@@ -24,7 +24,7 @@ from keras.losses import CategoricalCrossentropy
 IM_SIZE = 32
 BATCH_SIZE = 32
 
-NUM_SESSIONS = 100
+NUM_SESSIONS = 150
 
 # HPARAMS
 HP_NUM_FILTERS_1 = hp.HParam("num_filters_1", hp.IntInterval(4, 32))
@@ -187,7 +187,7 @@ def run(run_id, base_logdir, hparams, train_ds, val_ds):
     h_callback = hp.KerasCallback(logdir, hparams)
     model = build_model(hparams)
     result = model.fit(
-        train_ds, validation_data=[val_ds], epochs=4, callbacks=[t_callback, h_callback]
+        train_ds, validation_data=[val_ds], epochs=5, callbacks=[t_callback, h_callback]
     )
 
 
