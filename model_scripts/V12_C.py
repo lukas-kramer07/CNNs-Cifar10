@@ -4,6 +4,7 @@ This is the third of three scripts to improve the model architecture using HP-se
 
 import os
 import random
+import keras_tuner as kt
 from tensorboard.plugins.hparams import api as hp
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -39,7 +40,17 @@ def main():
     runall()
 
 
-def build_model_base(hparams):
+def build_model_base(
+    HP_NUM_FILTERS_1,
+    HP_NUM_FILTERS_2,
+    HP_NUM_FILTERS_3,
+    HP_NUM_UNITS1,
+    HP_NUM_UNITS2,
+    HP_NUM_UNITS3,
+    HP_REGULARIZATION_RATE,
+    HP_DROPOUT,
+    HP_LEARNING_RATE,
+):
     model = tf.keras.Sequential(
         [
             # Input
@@ -47,81 +58,69 @@ def build_model_base(hparams):
             #
             # First Convolutional block
             Conv2D(
-                filters=hparams[HP_NUM_FILTERS_1],
+                filters=HP_NUM_FILTERS_1,
                 kernel_size=3,
                 strides=1,
                 padding="valid",
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
+                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
             ),
             BatchNormalization(),
             MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=hparams[HP_DROPOUT]),
+            Dropout(rate=HP_DROPOUT),
             #
             # Second Convolutional block
             Conv2D(
-                filters=hparams[HP_NUM_FILTERS_2],
+                filters=HP_NUM_FILTERS_2,
                 kernel_size=3,
                 strides=1,
                 padding="valid",
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
+                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
             ),
             BatchNormalization(),
             MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=hparams[HP_DROPOUT]),
+            Dropout(rate=HP_DROPOUT),
             #
             # Third Convolutional block
             Conv2D(
-                filters=hparams[HP_NUM_FILTERS_3],
+                filters=HP_NUM_FILTERS_3,
                 kernel_size=3,
                 strides=1,
                 padding="valid",
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
+                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
             ),
             BatchNormalization(),
             MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=hparams[HP_DROPOUT]),
+            Dropout(rate=HP_DROPOUT),
             # Dense block
             Flatten(),
             Dense(
-                hparams[HP_NUM_UNITS1],
+                HP_NUM_UNITS1,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
+                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
             ),
             BatchNormalization(),
-            Dropout(rate=hparams[HP_DROPOUT]),
+            Dropout(rate=HP_DROPOUT),
             Dense(
-                hparams[HP_NUM_UNITS2],
+                HP_NUM_UNITS2,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
+                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
             ),
             BatchNormalization(),
-            Dropout(rate=hparams[HP_DROPOUT]),
+            Dropout(rate=HP_DROPOUT),
             Dense(
-                hparams[HP_NUM_UNITS3],
+                HP_NUM_UNITS3,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(
-                    hparams[HP_REGULARIZATION_RATE]
-                ),
+                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
             ),
             BatchNormalization(),
             Dense(10, activation="softmax"),
         ]
     )
     model.compile(
-        optimizer=Adam(learning_rate=hparams[HP_LEARNING_RATE]),
+        optimizer=Adam(learning_rate=HP_LEARNING_RATE),
         loss=CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
@@ -136,14 +135,32 @@ def build_tuner(hp):
     HP_NUM_UNITS1 = hp.HParam("num_units_1", hp.IntInterval(64, 256))
     HP_NUM_UNITS2 = hp.HParam("num_units_2", hp.IntInterval(32, 128))
     HP_NUM_UNITS3 = hp.HParam("num_units_3", hp.IntInterval(16, 64))
-    HP_REGULARIZATION_RATE = hp.HParam("regularization_rate", hp.RealInterval(0.001, 0.3))
+    HP_REGULARIZATION_RATE = hp.HParam(
+        "regularization_rate", hp.RealInterval(0.001, 0.3)
+    )
     HP_DROPOUT = hp.HParam("dropout", hp.RealInterval(0.01, 0.3))
     HP_LEARNING_RATE = hp.HParam("learning_rate", hp.RealInterval(0.0001, 0.01))
-    pass
+    model = build_model_base(HP_NUM_FILTERS_1=HP_NUM_FILTERS_1, 
+                             HP_NUM_FILTERS_2=HP_NUM_FILTERS_2,
+                             HP_NUM_FILTERS_3=HP_NUM_FILTERS_3,
+                             HP_NUM_UNITS1=HP_NUM_UNITS1,
+                             HP_NUM_UNITS2=HP_NUM_UNITS2,
+                             HP_NUM_UNITS3=HP_NUM_UNITS3,
+                             HP_LEARNING_RATE=HP_LEARNING_RATE,
+                             HP_DROPOUT=HP_DROPOUT,
+                             HP_REGULARIZATION_RATE=HP_REGULARIZATION_RATE)
+    return model
 
 def runall(num_sessions, base_logdir, train_ds, val_ds):
-    pass
-    #TODO
+    tuner = kt.Hyperband(
+        build_model_base,
+        objective="val_accuracy",
+        max_epochs=MAX_EPOCHS,
+        factor=3,
+        directory="logs",
+        project_name="hp",
+    )
+
 
 if __name__ == "__main__":
     main()
