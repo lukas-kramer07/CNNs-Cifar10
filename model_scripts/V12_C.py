@@ -3,9 +3,7 @@ This is the third of three scripts to improve the model architecture using HP-se
 """
 
 import os
-import random
 import keras_tuner as kt
-from tensorboard.plugins.hparams import api as hp
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from V11_E import preprocess_data
@@ -37,7 +35,7 @@ def main():
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
-    runall(base_dir= 'logs', log_dir= 'hp', train_ds=train_ds, val_ds=test_ds)
+    runall(base_dir="logs", log_dir="hp", train_ds=train_ds, val_ds=test_ds)
 
 
 def build_model_base(
@@ -151,6 +149,7 @@ def build_tuner(hp):
     )
     return model
 
+
 def runall(base_dir, log_dir, train_ds, val_ds):
     tuner = kt.Hyperband(
         build_tuner,
@@ -159,13 +158,19 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         factor=3,
         directory=base_dir,
     )
-    #callbacks
+    # callbacks
     stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
     logdir = os.path.join(base_dir, log_dir)
     t_callback = tf.keras.callbacks.TensorBoard(
         log_dir=logdir, update_freq=500, profile_batch=0
     )
-    tuner.search(train_ds, epochs= 50, validation_data=(val_ds), callbacks=[stop_early, t_callback])
+    tuner.search(
+        train_ds,
+        epochs=50,
+        validation_data=(val_ds),
+        callbacks=[stop_early, t_callback],
+    )
+
 
 if __name__ == "__main__":
     main()
