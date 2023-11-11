@@ -37,7 +37,7 @@ def main():
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
-    runall()
+    runall(base_dir= 'logs', log_dir= 'hp', train_ds=train_ds, val_ds=test_ds)
 
 
 def build_model_base(
@@ -140,27 +140,35 @@ def build_tuner(hp):
     )
     HP_DROPOUT = hp.HParam("dropout", hp.RealInterval(0.01, 0.3))
     HP_LEARNING_RATE = hp.HParam("learning_rate", hp.RealInterval(0.0001, 0.01))
-    model = build_model_base(HP_NUM_FILTERS_1=HP_NUM_FILTERS_1, 
-                             HP_NUM_FILTERS_2=HP_NUM_FILTERS_2,
-                             HP_NUM_FILTERS_3=HP_NUM_FILTERS_3,
-                             HP_NUM_UNITS1=HP_NUM_UNITS1,
-                             HP_NUM_UNITS2=HP_NUM_UNITS2,
-                             HP_NUM_UNITS3=HP_NUM_UNITS3,
-                             HP_LEARNING_RATE=HP_LEARNING_RATE,
-                             HP_DROPOUT=HP_DROPOUT,
-                             HP_REGULARIZATION_RATE=HP_REGULARIZATION_RATE)
+    model = build_model_base(
+        HP_NUM_FILTERS_1=HP_NUM_FILTERS_1,
+        HP_NUM_FILTERS_2=HP_NUM_FILTERS_2,
+        HP_NUM_FILTERS_3=HP_NUM_FILTERS_3,
+        HP_NUM_UNITS1=HP_NUM_UNITS1,
+        HP_NUM_UNITS2=HP_NUM_UNITS2,
+        HP_NUM_UNITS3=HP_NUM_UNITS3,
+        HP_LEARNING_RATE=HP_LEARNING_RATE,
+        HP_DROPOUT=HP_DROPOUT,
+        HP_REGULARIZATION_RATE=HP_REGULARIZATION_RATE,
+    )
     return model
 
-def runall(num_sessions, base_logdir, train_ds, val_ds):
+
+def runall(base_dir, log_dir, train_ds, val_ds):
     tuner = kt.Hyperband(
-        build_model_base,
+        build_tuner,
         objective="val_accuracy",
         max_epochs=MAX_EPOCHS,
         factor=3,
-        directory="logs",
-        project_name="hp",
+        directory=base_dir,
     )
-
+    #callbacks
+    stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
+    logdir = os.path.join(base_dir, log_dir)
+    t_callback = tf.keras.callbacks.TensorBoard(
+        log_dir=logdir, update_freq=500, profile_batch=0
+    )
+    tuner.search(train_ds, val_ds, callbacks=[stop_early, t_callback])
 
 if __name__ == "__main__":
     main()
