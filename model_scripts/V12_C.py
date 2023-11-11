@@ -129,17 +129,15 @@ def build_model_base(
 
 def build_tuner(hp):
     # HPARAMS
-    HP_NUM_FILTERS_1 = hp.HParam("num_filters_1", hp.IntInterval(4, 32))
-    HP_NUM_FILTERS_2 = hp.HParam("num_filters_2", hp.IntInterval(8, 64))
-    HP_NUM_FILTERS_3 = hp.HParam("num_filters_3", hp.IntInterval(16, 128))
-    HP_NUM_UNITS1 = hp.HParam("num_units_1", hp.IntInterval(64, 256))
-    HP_NUM_UNITS2 = hp.HParam("num_units_2", hp.IntInterval(32, 128))
-    HP_NUM_UNITS3 = hp.HParam("num_units_3", hp.IntInterval(16, 64))
-    HP_REGULARIZATION_RATE = hp.HParam(
-        "regularization_rate", hp.RealInterval(0.001, 0.3)
-    )
-    HP_DROPOUT = hp.HParam("dropout", hp.RealInterval(0.01, 0.3))
-    HP_LEARNING_RATE = hp.HParam("learning_rate", hp.RealInterval(0.0001, 0.01))
+    HP_NUM_FILTERS_1 = hp.Int("num_filters_1", 4, 32)
+    HP_NUM_FILTERS_2 = hp.Int("num_filters_2", 8, 64)
+    HP_NUM_FILTERS_3 = hp.Int("num_filters_3", 16, 128)
+    HP_NUM_UNITS1 = hp.Int("num_units_1", 64, 256)
+    HP_NUM_UNITS2 = hp.Int("num_units_2", 32, 128)
+    HP_NUM_UNITS3 = hp.Int("num_units_3", 16, 64)
+    HP_REGULARIZATION_RATE = hp.Float("regularization_rate", 0.001, 0.3)
+    HP_DROPOUT = hp.Float("dropout", 0.01, 0.3)
+    HP_LEARNING_RATE = hp.Float("learning_rate", 0.0001, 0.01)
     model = build_model_base(
         HP_NUM_FILTERS_1=HP_NUM_FILTERS_1,
         HP_NUM_FILTERS_2=HP_NUM_FILTERS_2,
@@ -152,7 +150,6 @@ def build_tuner(hp):
         HP_REGULARIZATION_RATE=HP_REGULARIZATION_RATE,
     )
     return model
-
 
 def runall(base_dir, log_dir, train_ds, val_ds):
     tuner = kt.Hyperband(
@@ -168,7 +165,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
     t_callback = tf.keras.callbacks.TensorBoard(
         log_dir=logdir, update_freq=500, profile_batch=0
     )
-    tuner.search(train_ds, val_ds, callbacks=[stop_early, t_callback])
+    tuner.search(train_ds, epochs= 50, validation_data=(val_ds), callbacks=[stop_early, t_callback])
 
 if __name__ == "__main__":
     main()
