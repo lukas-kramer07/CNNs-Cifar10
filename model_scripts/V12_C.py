@@ -155,6 +155,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         build_tuner,
         objective="val_accuracy",
         max_epochs=MAX_EPOCHS,
+        hyperband_iterations=1,
         factor=3,
         directory=base_dir,
     )
@@ -166,7 +167,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
     )
     tuner.search(
         train_ds,
-        epochs=50,
+        epochs=1,
         validation_data=(val_ds),
         callbacks=[stop_early, t_callback],
     )
