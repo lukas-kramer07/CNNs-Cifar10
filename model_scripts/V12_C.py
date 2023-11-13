@@ -22,7 +22,7 @@ from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
 BATCH_SIZE = 32
-MAX_EPOCHS = 10
+MAX_EPOCHS = 20
 
 
 def main():
