@@ -22,7 +22,7 @@ from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
 BATCH_SIZE = 32
-MAX_EPOCHS = 10
+MAX_TRIALS = 10
 
 
 def main():
@@ -151,14 +151,11 @@ def build_tuner(hp):
 
 
 def runall(base_dir, log_dir, train_ds, val_ds):
-    tuner = kt.Hyperband(
+    tuner = kt.BayesianOptimization(
         build_tuner,
         objective="val_accuracy",
-        max_epochs=MAX_EPOCHS,
-        hyperband_iterations=1,
-        factor=3,
+        max_trials=MAX_TRIALS,
         directory=base_dir,
-        max_iterations = 10
     )
     # callbacks
     stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
