@@ -22,7 +22,7 @@ from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
 BATCH_SIZE = 32
-MAX_EPOCHS = 20
+MAX_EPOCHS = 10
 
 
 def main():
@@ -158,6 +158,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         hyperband_iterations=1,
         factor=3,
         directory=base_dir,
+        max_iterations = 10
     )
     # callbacks
     stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
