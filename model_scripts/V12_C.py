@@ -22,7 +22,7 @@ from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
 BATCH_SIZE = 32
-MAX_TRIALS = 10
+MAX_TRIALS = 50
 
 
 def main():
@@ -156,7 +156,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         objective="val_accuracy",
         max_trials=MAX_TRIALS,
         directory=base_dir,
-        executions_per_trial = 3,
+        executions_per_trial = 2,
     )
     # callbacks
     stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
@@ -166,7 +166,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
     )
     tuner.search(
         train_ds,
-        epochs=1,
+        epochs=4,
         validation_data=(val_ds),
         callbacks=[stop_early, t_callback],
     )
