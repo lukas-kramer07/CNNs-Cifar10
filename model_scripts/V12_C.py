@@ -156,6 +156,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         objective="val_accuracy",
         max_trials=MAX_TRIALS,
         directory=base_dir,
+        executions_per_trial = 3,
     )
     # callbacks
     stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
