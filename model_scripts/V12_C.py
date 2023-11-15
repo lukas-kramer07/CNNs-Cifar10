@@ -170,7 +170,9 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         validation_data=(val_ds),
         callbacks=[stop_early, t_callback],
     )
+    tuner.results_summary()
 
 
 if __name__ == "__main__":
     main()
+    
