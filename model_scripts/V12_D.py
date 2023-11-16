@@ -11,6 +11,7 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from V11_E import preprocess_data
+from V11_E import visualize_data
 from keras import backend as K
 from keras.callbacks import (
     EarlyStopping,
@@ -19,9 +20,6 @@ from keras.callbacks import (
     ReduceLROnPlateau,
     TensorBoard,
 )
-import tensorflow as tf
-import tensorflow_datasets as tfds
-from V11_E import preprocess_data
 from keras.layers import (
     Conv2D,
     MaxPool2D,
@@ -51,17 +49,21 @@ class_names = [
 
 
 def main():
+    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
     # load dataset
     (train_ds, test_ds), ds_info = tfds.load(
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
     )
     # preprocess
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
+    # visualize new data
+    visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 
+    
     # Test model A
     model_name = "V12_A"
     model_A = build_model_A()
-    test_model(model=model_A, model_name= model_name, train_ds=train_ds, test_ds=test_ds)
+    test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
     # Test model B
     model_name = "V12_B"
@@ -213,6 +215,83 @@ def build_model_A():
                 16,
                 activation="relu",
                 kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            ),
+            BatchNormalization(),
+            Dense(10, activation="softmax"),
+        ]
+    )
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss=CategoricalCrossentropy(),
+        metrics=["accuracy"],
+    )
+    return model
+
+
+def build_model_B():
+    model = tf.keras.Sequential(
+        [
+            # Input
+            InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)),
+            #
+            # First Convolutional block
+            Conv2D(
+                filters=22,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.063145),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.18027),
+            #
+            # Second Convolutional block
+            Conv2D(
+                filters=48,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.063145),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.18027),
+            #
+            # Third Convolutional block
+            Conv2D(
+                filters=71,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.063145),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.18027),
+            # Dense block
+            Flatten(),
+            Dense(
+                159,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.063145),
+            ),
+            BatchNormalization(),
+            Dropout(rate=0.18027),
+            Dense(
+                100,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.063145),
+            ),
+            BatchNormalization(),
+            Dropout(rate=0.18027),
+            Dense(
+                27,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.063145),
             ),
             BatchNormalization(),
             Dense(10, activation="softmax"),
