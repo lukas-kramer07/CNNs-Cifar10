@@ -11,7 +11,6 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
 from V11_E import preprocess_data
-from V11_E import visualize_data
 from keras import backend as K
 from keras.callbacks import (
     EarlyStopping,
@@ -20,6 +19,21 @@ from keras.callbacks import (
     ReduceLROnPlateau,
     TensorBoard,
 )
+import tensorflow as tf
+import tensorflow_datasets as tfds
+from V11_E import preprocess_data
+from keras.layers import (
+    Conv2D,
+    MaxPool2D,
+    Dense,
+    InputLayer,
+    Flatten,
+    BatchNormalization,
+    Dropout,
+)
+from keras.optimizers import Adam
+from keras.losses import CategoricalCrossentropy
+
 IM_SIZE = 32
 BATCH_SIZE = 32
 class_names = [
@@ -44,8 +58,19 @@ def main():
     # preprocess
     train_ds, test_ds = preprocess_data(train_ds, test_ds)
 
-    
-def test_model(model, model_name, train_ds, test_ds):    
+    # Test model A
+    model_name = "V12_A"
+    model_A = build_model_A()
+    test_model(model=model_A, model_name= model_name, train_ds=train_ds, test_ds=test_ds)
+
+    # Test model B
+    model_name = "V12_B"
+
+    # Test model C
+    model_name = "V12_C"
+
+
+def test_model(model, model_name, train_ds, test_ds):
     # define callbacks
 
     # custom TensorBoard callback
@@ -97,6 +122,9 @@ def test_model(model, model_name, train_ds, test_ds):
         cooldown=0,
         min_lr=0,
     )
+
+    # Train model
+
     # train for 20 epochs
     history = model.fit(
         train_ds,
@@ -110,7 +138,8 @@ def test_model(model, model_name, train_ds, test_ds):
             LRTensorBoard(log_dir=LOG_DIR),
         ],
     )
-    # model_evaluation
+
+    # model evaluation
     utils.model_eval(
         history=history,
         model=model,
@@ -120,6 +149,83 @@ def test_model(model, model_name, train_ds, test_ds):
     )
 
 
+def build_model_A():
+    model = tf.keras.Sequential(
+        [
+            # Input
+            InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)),
+            #
+            # First Convolutional block
+            Conv2D(
+                filters=16,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.2),
+            #
+            # Second Convolutional block
+            Conv2D(
+                filters=32,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.2),
+            #
+            # Third Convolutional block
+            Conv2D(
+                filters=64,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.2),
+            # Dense block
+            Flatten(),
+            Dense(
+                128,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            ),
+            BatchNormalization(),
+            Dropout(rate=0.2),
+            Dense(
+                64,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            ),
+            BatchNormalization(),
+            Dropout(rate=0.2),
+            Dense(
+                16,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            ),
+            BatchNormalization(),
+            Dense(10, activation="softmax"),
+        ]
+    )
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss=CategoricalCrossentropy(),
+        metrics=["accuracy"],
+    )
+    return model
+
+
 if __name__ == "__main__":
     main()
-    # plt.show()
+    plt.show()
