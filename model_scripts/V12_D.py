@@ -59,7 +59,6 @@ def main():
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 
-    
     # Test model A
     model_name = "V12_A"
     model_A = build_model_A()
@@ -67,7 +66,8 @@ def main():
 
     # Test model B
     model_name = "V12_B"
-
+    model_B = build_model_B()
+    test_model(model=model_B, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
     # Test model C
     model_name = "V12_C"
 
