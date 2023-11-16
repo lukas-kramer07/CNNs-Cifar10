@@ -305,6 +305,83 @@ def build_model_B():
     return model
 
 
+def build_model_C():
+    model = tf.keras.Sequential(
+        [
+            # Input
+            InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)),
+            #
+            # First Convolutional block
+            Conv2D(
+                filters=32,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.18027),
+            #
+            # Second Convolutional block
+            Conv2D(
+                filters=64,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.18027),
+            #
+            # Third Convolutional block
+            Conv2D(
+                filters=128,
+                kernel_size=3,
+                strides=1,
+                padding="valid",
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+            ),
+            BatchNormalization(),
+            MaxPool2D(pool_size=2, strides=2),
+            Dropout(rate=0.18027),
+            # Dense block
+            Flatten(),
+            Dense(
+                64,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+            ),
+            BatchNormalization(),
+            Dropout(rate=0.18027),
+            Dense(
+                32,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+            ),
+            BatchNormalization(),
+            Dropout(rate=0.18027),
+            Dense(
+                64,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+            ),
+            BatchNormalization(),
+            Dense(10, activation="softmax"),
+        ]
+    )
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss=CategoricalCrossentropy(),
+        metrics=["accuracy"],
+    )
+    return model
+
+
 if __name__ == "__main__":
     main()
     plt.show()
