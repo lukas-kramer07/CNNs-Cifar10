@@ -74,6 +74,10 @@ def main():
     test_model(model=model_C, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
 
+    model_A.summary()
+    model_B.summary()
+    model_C.summary()
+
 def test_model(model, model_name, train_ds, test_ds):
     # define callbacks
 
