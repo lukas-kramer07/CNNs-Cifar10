@@ -62,21 +62,24 @@ def main():
     # Test model A
     model_name = "V12_A"
     model_A = build_model_A()
+    print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
     # Test model B
     model_name = "V12_B"
     model_B = build_model_B()
+    print("Model_B test starting:")
     test_model(model=model_B, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
     # Test model C
     model_name = "V12_C"
     model_C = build_model_C()
+    print("Model_C test starting:")
     test_model(model=model_C, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
-
 
     model_A.summary()
     model_B.summary()
     model_C.summary()
+
 
 def test_model(model, model_name, train_ds, test_ds):
     # define callbacks
