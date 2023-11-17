@@ -70,6 +70,8 @@ def main():
     test_model(model=model_B, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
     # Test model C
     model_name = "V12_C"
+    model_C = build_model_C()
+    test_model(model=model_C, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
 
 def test_model(model, model_name, train_ds, test_ds):
