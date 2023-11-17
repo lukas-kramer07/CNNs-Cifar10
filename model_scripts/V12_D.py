@@ -313,69 +313,69 @@ def build_model_C():
             #
             # First Convolutional block
             Conv2D(
-                filters=32,
+                filters=12,
                 kernel_size=3,
                 strides=1,
                 padding="valid",
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+                kernel_regularizer=tf.keras.regularizers.L2(0.07883),
             ),
             BatchNormalization(),
             MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=0.18027),
+            Dropout(rate=0.06217),
             #
             # Second Convolutional block
             Conv2D(
-                filters=64,
+                filters=26,
                 kernel_size=3,
                 strides=1,
                 padding="valid",
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+                kernel_regularizer=tf.keras.regularizers.L2(0.07883),
             ),
             BatchNormalization(),
             MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=0.18027),
+            Dropout(rate=0.06217),
             #
             # Third Convolutional block
             Conv2D(
-                filters=128,
+                filters=56,
                 kernel_size=3,
                 strides=1,
                 padding="valid",
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+                kernel_regularizer=tf.keras.regularizers.L2(0.07883),
             ),
             BatchNormalization(),
             MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=0.18027),
+            Dropout(rate=0.06217),
             # Dense block
             Flatten(),
             Dense(
-                64,
+                237,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+                kernel_regularizer=tf.keras.regularizers.L2(0.07883),
             ),
             BatchNormalization(),
-            Dropout(rate=0.18027),
+            Dropout(rate=0.06217),
+            Dense(
+                101,
+                activation="relu",
+                kernel_regularizer=tf.keras.regularizers.L2(0.07883),
+            ),
+            BatchNormalization(),
+            Dropout(rate=0.06217),
             Dense(
                 32,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.3),
-            ),
-            BatchNormalization(),
-            Dropout(rate=0.18027),
-            Dense(
-                64,
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.3),
+                kernel_regularizer=tf.keras.regularizers.L2(0.07883),
             ),
             BatchNormalization(),
             Dense(10, activation="softmax"),
         ]
     )
     model.compile(
-        optimizer=Adam(learning_rate=0.001),
+        optimizer=Adam(learning_rate=0.0001529),
         loss=CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
