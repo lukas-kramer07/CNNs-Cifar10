@@ -2,8 +2,10 @@
 HP tuning for new Res-Net architecture
 """
 
+from ast import Add
 import os
 import keras_tuner as kt
+from pkg_resources import resource_listdir
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from V11_E import preprocess_data
@@ -16,6 +18,7 @@ from keras.layers import (
     Flatten,
     BatchNormalization,
     Dropout,
+    Layer,
 )
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
@@ -40,8 +43,7 @@ def main():
 
 def build_model_base(
     HP_NUM_FILTERS_1,
-    HP_NUM_FILTERS_2,
-    HP_NUM_FILTERS_3,
+    HP_NUM_RESBLOCKS,
     HP_NUM_UNITS1,
     HP_NUM_UNITS2,
     HP_NUM_UNITS3,
@@ -49,6 +51,31 @@ def build_model_base(
     HP_DROPOUT,
     HP_LEARNING_RATE,
 ):
+    class ResBlock(Layer):
+        def __init__(self, channels, strides=1):
+            super(ResBlock, self).__init__(name="res_block")
+
+            self.res_conv = strides != 1
+            self.conv1 = Conv2D(
+                filters=channels, kernel_size=3, strides=strides, padding="same"
+            )
+            self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
+
+            self.activation = tf.keras.activations.relu
+            if self.res_conv:
+                self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=strides)
+
+        def call(self, input, training):
+            x = self.conv1(input, training)
+            x = self.conv2(x, training)
+
+            if self.res_conv:
+                residue = self.conv3(input)
+                result = Add()([x, residue])
+            else:
+                result = Add([x, input])
+            return self.activation(result)
+
     model = tf.keras.Sequential(
         [
             # Input
@@ -57,41 +84,16 @@ def build_model_base(
             # First Convolutional block
             Conv2D(
                 filters=HP_NUM_FILTERS_1,
-                kernel_size=3,
+                kernel_size=7,
                 strides=1,
-                padding="valid",
+                padding="same",
                 activation="relu",
                 kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
             ),
             BatchNormalization(),
             MaxPool2D(pool_size=2, strides=2),
             Dropout(rate=HP_DROPOUT),
-            #
-            # Second Convolutional block
-            Conv2D(
-                filters=HP_NUM_FILTERS_2,
-                kernel_size=3,
-                strides=1,
-                padding="valid",
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
-            ),
-            BatchNormalization(),
-            MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=HP_DROPOUT),
-            #
-            # Third Convolutional block
-            Conv2D(
-                filters=HP_NUM_FILTERS_3,
-                kernel_size=3,
-                strides=1,
-                padding="valid",
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
-            ),
-            BatchNormalization(),
-            MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=HP_DROPOUT),
+            # Residual Blocks
             # Dense block
             Flatten(),
             Dense(
