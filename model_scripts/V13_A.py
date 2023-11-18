@@ -79,26 +79,40 @@ def build_model_base(
                 result = Add()([x, input])
             return self.activation(result)
 
-    model = tf.keras.Sequential(
+    model = tf.keras.Sequential()
+
+    # Input block
+    model.add(InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)))
+    model.add(
+        Conv2D(
+            filters=HP_NUM_FILTERS_1,
+            kernel_size=7,
+            strides=1,
+            padding="same",
+            activation="relu",
+            kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
+        )
+    )
+    model.add(BatchNormalization())
+    model.add(MaxPool2D(pool_size=2, strides=2))
+    model.add(Dropout(rate=HP_DROPOUT))
+
+    # Residual blocks
+    res_blocks = tf.keras.Sequential()
+    for n in range(HP_NUM_RESBLOCKS):
+        channels = HP_NUM_FILTERS_1 * 2**n
+        res_blocks.add(ResCell(channels, strides=2, name=f"res_cell-{n}-1"))
+        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-2"))
+        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-3"))
+        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-4"))
+
+    res_blocks.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
+    res_blocks.add(Flatten())
+    model.add(res_blocks)
+
+    # Output block
+    output = tf.keras.Sequential(
         [
-            # Input
-            InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)),
-            #
-            # First Convolutional block
-            Conv2D(
-                filters=HP_NUM_FILTERS_1,
-                kernel_size=7,
-                strides=1,
-                padding="same",
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
-            ),
-            BatchNormalization(),
-            MaxPool2D(pool_size=2, strides=2),
-            Dropout(rate=HP_DROPOUT),
-            # Residual Blocks
-            # Dense block
-            Flatten(),
             Dense(
                 HP_NUM_UNITS1,
                 activation="relu",
@@ -122,11 +136,16 @@ def build_model_base(
             Dense(10, activation="softmax"),
         ]
     )
+
+    model.add(output)
+
+    # Compile the model
     model.compile(
         optimizer=Adam(learning_rate=HP_LEARNING_RATE),
         loss=CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
+
     return model
 
 
