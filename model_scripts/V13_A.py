@@ -6,6 +6,12 @@ import os
 import keras_tuner as kt
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from keras.callbacks import (
+    EarlyStopping,
+    LearningRateScheduler,
+    ReduceLROnPlateau,
+    TensorBoard,
+)
 from V11_E import preprocess_data
 from V11_E import visualize_data
 from keras.layers import (
@@ -163,7 +169,7 @@ def build_tuner(hp):
     HP_LEARNING_RATE = hp.Float("learning_rate", 0.0001, 0.01)
     model = build_model_base(
         HP_NUM_FILTERS_1=HP_NUM_FILTERS_1,
-        HP_NUM_RESBLOCKS= HP_NUM_RESBLOCKS,
+        HP_NUM_RESBLOCKS=HP_NUM_RESBLOCKS,
         HP_NUM_UNITS1=HP_NUM_UNITS1,
         HP_NUM_UNITS2=HP_NUM_UNITS2,
         HP_NUM_UNITS3=HP_NUM_UNITS3,
@@ -183,16 +189,33 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         executions_per_trial=1,
     )
     # callbacks
-    stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
+    stop_early = EarlyStopping(monitor="val_loss", patience=5)
+    def scheduler(epoch, lr):
+        if epoch < 3:
+            lr = lr
+        else:
+            lr = (lr * tf.math.exp(-0.1)).numpy()
+        return lr
+    scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
+    plateau_callback = ReduceLROnPlateau(
+        monitor="val_accuracy",
+        factor=0.1,
+        patience=3,
+        verbose=1,
+        mode="auto",
+        min_delta=0.0001,
+        cooldown=0,
+        min_lr=0,
+    )
     logdir = os.path.join(base_dir, log_dir)
-    t_callback = tf.keras.callbacks.TensorBoard(
+    t_callback = TensorBoard(
         log_dir=logdir, update_freq=500, profile_batch=0
     )
     tuner.search(
         train_ds,
         epochs=10,
         validation_data=(val_ds),
-        callbacks=[stop_early, t_callback],
+        callbacks=[stop_early, t_callback, scheduler_callback, plateau_callback],
     )
     tuner.results_summary()
 
