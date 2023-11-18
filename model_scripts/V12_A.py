@@ -3,7 +3,6 @@ This is the first of three scripts to improve the model architecture using HP-se
 """
 
 import os
-from pandas import Categorical
 from tensorboard.plugins.hparams import api as hp
 import tensorflow as tf
 import tensorflow_datasets as tfds
