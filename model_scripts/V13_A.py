@@ -17,8 +17,10 @@ from keras.layers import (
     InputLayer,
     Flatten,
     BatchNormalization,
-    Dropout,
     Layer,
+    Dropout,
+    AveragePooling2D,
+    Add,
 )
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
@@ -26,6 +28,7 @@ from keras.losses import CategoricalCrossentropy
 IM_SIZE = 32
 BATCH_SIZE = 32
 MAX_TRIALS = 30
+
 
 class ResCell(Layer):
     def __init__(self, channels, strides=1, name="res_cell"):
@@ -54,7 +57,8 @@ class ResCell(Layer):
         else:
             result = Add()([x, input])
         return self.activation(result)
-        
+
+
 def main():
     """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then starts a bayesianOptimizer search for the best hparams for the model."""
     # load dataset
@@ -78,6 +82,7 @@ def build_model_base(
     HP_DROPOUT,
     HP_LEARNING_RATE,
 ):
+    # Build the model
     model = tf.keras.Sequential()
 
     # Input block
@@ -150,9 +155,8 @@ def build_model_base(
 
 def build_tuner(hp):
     # HPARAMS
-    HP_NUM_FILTERS_1 = hp.Int("num_filters_1", 4, 32)
-    HP_NUM_FILTERS_2 = hp.Int("num_filters_2", 8, 64)
-    HP_NUM_FILTERS_3 = hp.Int("num_filters_3", 16, 128)
+    HP_NUM_FILTERS_1 = hp.Int("num_filters_1", 4, 64)
+    HP_NUM_RESBLOCKS = hp.Int("num_units_1", 1, 3)
     HP_NUM_UNITS1 = hp.Int("num_units_1", 64, 256)
     HP_NUM_UNITS2 = hp.Int("num_units_2", 32, 128)
     HP_NUM_UNITS3 = hp.Int("num_units_3", 16, 64)
@@ -161,8 +165,7 @@ def build_tuner(hp):
     HP_LEARNING_RATE = hp.Float("learning_rate", 0.0001, 0.01)
     model = build_model_base(
         HP_NUM_FILTERS_1=HP_NUM_FILTERS_1,
-        HP_NUM_FILTERS_2=HP_NUM_FILTERS_2,
-        HP_NUM_FILTERS_3=HP_NUM_FILTERS_3,
+        HP_NUM_RESBLOCKS= HP_NUM_RESBLOCKS,
         HP_NUM_UNITS1=HP_NUM_UNITS1,
         HP_NUM_UNITS2=HP_NUM_UNITS2,
         HP_NUM_UNITS3=HP_NUM_UNITS3,
@@ -179,7 +182,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         objective="val_accuracy",
         max_trials=MAX_TRIALS,
         directory=base_dir,
-        executions_per_trial=2,
+        executions_per_trial=1,
     )
     # callbacks
     stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
@@ -189,7 +192,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
     )
     tuner.search(
         train_ds,
-        epochs=4,
+        epochs=10,
         validation_data=(val_ds),
         callbacks=[stop_early, t_callback],
     )
