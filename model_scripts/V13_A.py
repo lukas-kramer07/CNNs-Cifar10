@@ -2,10 +2,8 @@
 HP tuning for new Res-Net architecture
 """
 
-from ast import Add
 import os
 import keras_tuner as kt
-from pkg_resources import resource_listdir
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from V11_E import preprocess_data
@@ -156,8 +154,8 @@ def build_model_base(
 def build_tuner(hp):
     # HPARAMS
     HP_NUM_FILTERS_1 = hp.Int("num_filters_1", 4, 64)
-    HP_NUM_RESBLOCKS = hp.Int("num_units_1", 1, 3)
-    HP_NUM_UNITS1 = hp.Int("num_units_1", 64, 256)
+    HP_NUM_RESBLOCKS = hp.Int("num_resblocks_1", 1, 3)
+    HP_NUM_UNITS1 = hp.Int("num_units_1", 64, 128)
     HP_NUM_UNITS2 = hp.Int("num_units_2", 32, 128)
     HP_NUM_UNITS3 = hp.Int("num_units_3", 16, 64)
     HP_REGULARIZATION_RATE = hp.Float("regularization_rate", 0.001, 0.3)
