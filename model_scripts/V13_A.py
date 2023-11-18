@@ -189,13 +189,15 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         executions_per_trial=1,
     )
     # callbacks
-    stop_early = EarlyStopping(monitor="val_loss", patience=5)
+    stop_early = EarlyStopping(monitor="val_loss", patience=4)
+
     def scheduler(epoch, lr):
-        if epoch < 3:
+        if epoch <= 3:
             lr = lr
-        else:
-            lr = (lr * tf.math.exp(-0.1)).numpy()
+        elif epoch % 3 == 0:
+            lr = (lr * tf.math.exp(-0.4)).numpy()
         return lr
+
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
     plateau_callback = ReduceLROnPlateau(
         monitor="val_accuracy",
@@ -208,12 +210,10 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         min_lr=0,
     )
     logdir = os.path.join(base_dir, log_dir)
-    t_callback = TensorBoard(
-        log_dir=logdir, update_freq=500, profile_batch=0
-    )
+    t_callback = TensorBoard(log_dir=logdir, update_freq=500, profile_batch=0)
     tuner.search(
         train_ds,
-        epochs=10,
+        epochs=15,
         validation_data=(val_ds),
         callbacks=[stop_early, t_callback, scheduler_callback, plateau_callback],
     )
