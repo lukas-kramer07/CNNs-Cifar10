@@ -51,29 +51,32 @@ def build_model_base(
     HP_DROPOUT,
     HP_LEARNING_RATE,
 ):
-    class ResBlock(Layer):
-        def __init__(self, channels, strides=1):
-            super(ResBlock, self).__init__(name="res_block")
+    class ResCell(Layer):
+        def __init__(self, channels, strides=1, name="res_cell"):
+            super(ResCell, self).__init__(name=name)
 
             self.res_conv = strides != 1
             self.conv1 = Conv2D(
                 filters=channels, kernel_size=3, strides=strides, padding="same"
             )
             self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
-
+            self.norm = BatchNormalization()
             self.activation = tf.keras.activations.relu
             if self.res_conv:
                 self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=strides)
 
         def call(self, input, training):
-            x = self.conv1(input, training)
-            x = self.conv2(x, training)
+            x = self.conv1(input)
+            x = self.norm(x, training)
+            x = self.conv2(x)
+            x = self.norm(x, training)
 
             if self.res_conv:
                 residue = self.conv3(input)
+                residue = self.norm(residue, training)
                 result = Add()([x, residue])
             else:
-                result = Add([x, input])
+                result = Add()([x, input])
             return self.activation(result)
 
     model = tf.keras.Sequential(
