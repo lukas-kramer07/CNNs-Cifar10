@@ -25,11 +25,38 @@ from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
 BATCH_SIZE = 32
-MAX_TRIALS = 50
+MAX_TRIALS = 30
 
+class ResCell(Layer):
+    def __init__(self, channels, strides=1, name="res_cell"):
+        super(ResCell, self).__init__(name=name)
 
+        self.res_conv = strides != 1
+        self.conv1 = Conv2D(
+            filters=channels, kernel_size=3, strides=strides, padding="same"
+        )
+        self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
+        self.norm = BatchNormalization()
+        self.activation = tf.keras.activations.relu
+        if self.res_conv:
+            self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=strides)
+
+    def call(self, input, training):
+        x = self.conv1(input)
+        x = self.norm(x, training)
+        x = self.conv2(x)
+        x = self.norm(x, training)
+
+        if self.res_conv:
+            residue = self.conv3(input)
+            residue = self.norm(residue, training)
+            result = Add()([x, residue])
+        else:
+            result = Add()([x, input])
+        return self.activation(result)
+        
 def main():
-    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then starts a grid search for the best hparams for the model."""
+    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then starts a bayesianOptimizer search for the best hparams for the model."""
     # load dataset
     (train_ds, test_ds), ds_info = tfds.load(
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
@@ -51,34 +78,6 @@ def build_model_base(
     HP_DROPOUT,
     HP_LEARNING_RATE,
 ):
-    class ResCell(Layer):
-        def __init__(self, channels, strides=1, name="res_cell"):
-            super(ResCell, self).__init__(name=name)
-
-            self.res_conv = strides != 1
-            self.conv1 = Conv2D(
-                filters=channels, kernel_size=3, strides=strides, padding="same"
-            )
-            self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
-            self.norm = BatchNormalization()
-            self.activation = tf.keras.activations.relu
-            if self.res_conv:
-                self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=strides)
-
-        def call(self, input, training):
-            x = self.conv1(input)
-            x = self.norm(x, training)
-            x = self.conv2(x)
-            x = self.norm(x, training)
-
-            if self.res_conv:
-                residue = self.conv3(input)
-                residue = self.norm(residue, training)
-                result = Add()([x, residue])
-            else:
-                result = Add()([x, input])
-            return self.activation(result)
-
     model = tf.keras.Sequential()
 
     # Input block
