@@ -12,7 +12,7 @@ from keras.callbacks import (
     ReduceLROnPlateau,
     TensorBoard,
 )
-from V11_E import preprocess_data
+from V11_B import preprocess_data
 from V11_E import visualize_data
 from keras.layers import (
     Conv2D,
@@ -31,7 +31,7 @@ from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
 BATCH_SIZE = 32
-MAX_TRIALS = 30
+MAX_TRIALS = 40
 
 
 class ResCell(Layer):
@@ -160,7 +160,7 @@ def build_model_base(
 def build_tuner(hp):
     # HPARAMS
     HP_NUM_FILTERS_1 = hp.Int("num_filters_1", 4, 64)
-    HP_NUM_RESBLOCKS = hp.Int("num_resblocks_1", 1, 3)
+    HP_NUM_RESBLOCKS = hp.Int("num_resblocks_1", 1, 4)
     HP_NUM_UNITS1 = hp.Int("num_units_1", 64, 128)
     HP_NUM_UNITS2 = hp.Int("num_units_2", 32, 128)
     HP_NUM_UNITS3 = hp.Int("num_units_3", 16, 64)
@@ -189,13 +189,13 @@ def runall(base_dir, log_dir, train_ds, val_ds):
         executions_per_trial=1,
     )
     # callbacks
-    stop_early = EarlyStopping(monitor="val_loss", patience=4)
+    stop_early = EarlyStopping(monitor="val_loss", patience=4, verbose=1)
 
     def scheduler(epoch, lr):
         if epoch <= 3:
             lr = lr
         elif epoch % 3 == 0:
-            lr = (lr * tf.math.exp(-0.4)).numpy()
+            lr = (lr * tf.math.exp(-0.35)).numpy()
         return lr
 
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
@@ -213,7 +213,7 @@ def runall(base_dir, log_dir, train_ds, val_ds):
     t_callback = TensorBoard(log_dir=logdir, update_freq=500, profile_batch=0)
     tuner.search(
         train_ds,
-        epochs=15,
+        epochs=20,
         validation_data=(val_ds),
         callbacks=[stop_early, t_callback, scheduler_callback, plateau_callback],
     )

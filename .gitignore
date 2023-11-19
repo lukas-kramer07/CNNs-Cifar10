@@ -162,3 +162,4 @@ cython_debug/
 #my private test files
 run_all.py
 test.py
+/logs/untitled_project/
