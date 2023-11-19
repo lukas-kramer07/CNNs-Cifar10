@@ -54,13 +54,24 @@ class ResCell(Layer):
 
         self.res_conv = True if strides != 1 else False
         self.conv1 = Conv2D(
-            filters=channels, kernel_size=3, strides=strides, padding="same"
+            filters=channels,
+            kernel_size=3,
+            strides=strides,
+            padding="same",
+            activation="relu",
         )
-        self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
+        self.conv2 = Conv2D(
+            filters=channels,
+            kernel_size=3,
+            padding="same",
+            activation="relu",
+        )
         self.norm = BatchNormalization()
         self.activation = tf.keras.activations.relu
         if self.res_conv:
-            self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=strides)
+            self.conv3 = Conv2D(
+                filters=channels, kernel_size=1, strides=strides, activation="relu"
+            )
 
     def call(self, input, training):
         x = self.conv1(input)
@@ -84,13 +95,14 @@ def main():
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
     )
     # preprocess
-    train_ds, test_ds = preprocess_data(train_ds, test_ds)
+    train_ds, test_ds = preprocess_data(train_ds, test_ds, batch_size=128)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 
     # Test model A
     model_name = "V13_A"
-    model_A = build_model_A()
+    config = [2,2,2,2]
+    model_A = build_model_A(config)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
     model_A.summary()
@@ -166,7 +178,7 @@ def test_model(model, model_name, train_ds, test_ds):
     )
 
 
-def build_model_A():
+def build_model_A(config):
     model = tf.keras.Sequential()
 
     # Input block
@@ -186,14 +198,17 @@ def build_model_A():
     model.add(Dropout(rate=0.1))
 
     # Residual blocks
-    for n in range(1):
-        channels = 32 * 2**n
-        model.add(ResCell(channels, strides=2, name=f"res_cell-{n}-1"))
-        model.add(ResCell(channels, name=f"res_cell-{n}-2"))
-        model.add(ResCell(channels, name=f"res_cell-{n}-3"))
-        model.add(ResCell(channels, name=f"res_cell-{n}-4"))
+    for reps, groups in enumerate(config):
+        for n in range(groups):
+            channels = 32 * (2**reps)
+            if n == 0 and reps == 0:
+                model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-1"))
+            elif n== 0:
+                model.add(ResCell(channels, strides=2, name=f"res_cell-{reps}-{n}-1"))
+            else:
+                model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-2"))
 
-    #model.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
+    model.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
     model.add(Flatten())
 
     # Output block
