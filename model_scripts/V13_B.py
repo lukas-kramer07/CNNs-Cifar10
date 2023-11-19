@@ -52,7 +52,7 @@ class ResCell(Layer):
     def __init__(self, channels, strides=1, name="res_cell"):
         super(ResCell, self).__init__(name=name)
 
-        self.res_conv = strides != 1
+        self.res_conv = True if strides != 1 else False
         self.conv1 = Conv2D(
             filters=channels, kernel_size=3, strides=strides, padding="same"
         )
@@ -193,7 +193,7 @@ def build_model_A():
         model.add(ResCell(channels, name=f"res_cell-{n}-3"))
         model.add(ResCell(channels, name=f"res_cell-{n}-4"))
 
-    model.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
+    #model.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
     model.add(Flatten())
 
     # Output block
