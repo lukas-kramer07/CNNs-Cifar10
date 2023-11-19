@@ -95,6 +95,7 @@ def main():
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
     model_A.summary()
 
+
 def test_model(model, model_name, train_ds, test_ds):
     # define callbacks
 
@@ -112,31 +113,16 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    es_callback = EarlyStopping(
-        monitor="val_accuracy",
-        min_delta=0,
-        patience=5,
-        verbose=1,
-        mode="auto",
-        baseline=None,
-        restore_best_weights=True,
-    )
+    stop_early = EarlyStopping(monitor="val_loss", patience=4, verbose=1)
 
     def scheduler(epoch, lr):
-        if epoch < 3:
+        if epoch <= 3:
             lr = lr
-        else:
-            lr = (lr * tf.math.exp(-0.1)).numpy()
+        elif epoch % 3 == 0:
+            lr = (lr * tf.math.exp(-0.35)).numpy()
         return lr
 
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
-    checkpoint_callback = ModelCheckpoint(
-        f"model_checkpoints/training_checkpoints/{model_name}",
-        monitor="val_loss",
-        verbose=0,
-        save_best_only=True,
-        mode="auto",
-    )
     plateau_callback = ReduceLROnPlateau(
         monitor="val_accuracy",
         factor=0.1,
@@ -147,7 +133,13 @@ def test_model(model, model_name, train_ds, test_ds):
         cooldown=0,
         min_lr=0,
     )
-
+    checkpoint_callback = ModelCheckpoint(
+        f"model_checkpoints/training_checkpoints/{model_name}",
+        monitor="val_loss",
+        verbose=0,
+        save_best_only=True,
+        mode="auto",
+    )
     # Train model
 
     # train for 20 epochs
@@ -156,10 +148,10 @@ def test_model(model, model_name, train_ds, test_ds):
         epochs=30,
         validation_data=test_ds,
         callbacks=[
-            es_callback,
+            stop_early,
             scheduler_callback,
-            checkpoint_callback,
             plateau_callback,
+            checkpoint_callback,
             LRTensorBoard(log_dir=LOG_DIR),
         ],
     )
@@ -186,7 +178,7 @@ def build_model_A():
             strides=1,
             padding="same",
             activation="relu",
-            kernel_regularizer=tf.keras.regularizers.L2(0.01),
+            kernel_regularizer=tf.keras.regularizers.L2(0.001),
         )
     )
     model.add(BatchNormalization())
@@ -194,16 +186,15 @@ def build_model_A():
     model.add(Dropout(rate=0.1))
 
     # Residual blocks
-    res_blocks = tf.keras.Sequential()
-    for n in range(3):
+    for n in range(0):
         channels = 32 * 2**n
-        res_blocks.add(ResCell(channels, strides=2, name=f"res_cell-{n}-1"))
-        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-2"))
-        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-3"))
+        model.add(ResCell(channels, strides=2, name=f"res_cell-{n}-1"))
+        model.add(ResCell(channels, name=f"res_cell-{n}-2"))
+        model.add(ResCell(channels, name=f"res_cell-{n}-3"))
+        model.add(ResCell(channels, name=f"res_cell-{n}-4"))
 
-    res_blocks.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
-    res_blocks.add(Flatten())
-    model.add(res_blocks)
+    model.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
+    model.add(Flatten())
 
     # Output block
     output = tf.keras.Sequential(
@@ -211,21 +202,21 @@ def build_model_A():
             Dense(
                 300,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.01),
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
             ),
             BatchNormalization(),
             Dropout(rate=0.1),
             Dense(
                 150,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.01),
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
             ),
             BatchNormalization(),
             Dropout(rate=0.1),
             Dense(
                 50,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.01),
+                kernel_regularizer=tf.keras.regularizers.L2(0.001),
             ),
             BatchNormalization(),
             Dense(10, activation="softmax"),
@@ -236,7 +227,7 @@ def build_model_A():
 
     # Compile the model
     model.compile(
-        optimizer=Adam(learning_rate=0.01),
+        optimizer=Adam(learning_rate=0.001),
         loss=CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
