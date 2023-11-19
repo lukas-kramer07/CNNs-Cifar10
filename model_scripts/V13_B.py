@@ -27,7 +27,7 @@ from keras.layers import (
     Dropout,
     Layer,
     Add,
-    AveragePooling2D,
+    GlobalAveragePooling2D,
 )
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
@@ -101,7 +101,7 @@ def main():
 
     # Test model A
     model_name = "V13_A"
-    config = [3,4,6,3]
+    config = [2,2,2,2]
     model_A = build_model_A(config)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
@@ -208,38 +208,8 @@ def build_model_A(config):
             else:
                 model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-2"))
 
-    model.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
-    model.add(Flatten())
-
-    # Output block
-    output = tf.keras.Sequential(
-        [
-            Dense(
-                300,
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.001),
-            ),
-            BatchNormalization(),
-            Dropout(rate=0.1),
-            Dense(
-                150,
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.001),
-            ),
-            BatchNormalization(),
-            Dropout(rate=0.1),
-            Dense(
-                50,
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(0.001),
-            ),
-            BatchNormalization(),
-            Dense(10, activation="softmax"),
-        ]
-    )
-
-    model.add(output)
-
+    model.add(GlobalAveragePooling2D())
+    model.add(Dense(10, activation="softmax"))
     # Compile the model
     model.compile(
         optimizer=Adam(learning_rate=0.001),
