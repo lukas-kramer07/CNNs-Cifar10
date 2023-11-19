@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
-from V11_D import preprocess_data
+from V11_E import preprocess_data
 from V11_E import visualize_data
 from keras import backend as K
 from keras.callbacks import (
@@ -186,7 +186,7 @@ def build_model_A():
     model.add(Dropout(rate=0.1))
 
     # Residual blocks
-    for n in range(0):
+    for n in range(1):
         channels = 32 * 2**n
         model.add(ResCell(channels, strides=2, name=f"res_cell-{n}-1"))
         model.add(ResCell(channels, name=f"res_cell-{n}-2"))
