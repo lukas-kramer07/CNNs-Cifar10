@@ -1,9 +1,6 @@
 """
 This script is a comparison of the hp models developed in V12 A to C
 """
-"""
-  uses V2 model and includes the tensorboard_callback
-"""
 import datetime
 
 import matplotlib.pyplot as plt
