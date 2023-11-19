@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
-from V11_E import preprocess_data
+from V11_D import preprocess_data
 from V11_E import visualize_data
 from keras import backend as K
 from keras.callbacks import (
@@ -22,12 +22,12 @@ from keras.layers import (
     MaxPool2D,
     Dense,
     InputLayer,
-    Flatten,
+    Activation,
     BatchNormalization,
     Dropout,
     Layer,
     Add,
-    GlobalAveragePooling2D,
+    GlobalMaxPooling2D,
 )
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
@@ -58,26 +58,26 @@ class ResCell(Layer):
             kernel_size=3,
             strides=strides,
             padding="same",
-            activation="relu",
         )
         self.conv2 = Conv2D(
             filters=channels,
             kernel_size=3,
             padding="same",
-            activation="relu",
         )
-        self.norm = BatchNormalization()
-        self.activation = tf.keras.activations.relu
+        self.norm = BatchNormalization(axis=3)
+        self.activation = Activation('relu')
+
         if self.res_conv:
             self.conv3 = Conv2D(
-                filters=channels, kernel_size=1, strides=strides, activation="relu"
+                filters=channels, kernel_size=1, strides=strides,
             )
 
     def call(self, input, training):
         x = self.conv1(input)
-        x = self.norm(x, training)
+        x = self.norm(x)
+        x = self.activation(x)
         x = self.conv2(x)
-        x = self.norm(x, training)
+        x = self.norm(x)
 
         if self.res_conv:
             residue = self.conv3(input)
@@ -208,7 +208,7 @@ def build_model_A(config):
             else:
                 model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-2"))
 
-    model.add(GlobalAveragePooling2D())
+    model.add(GlobalMaxPooling2D())
     model.add(Dense(10, activation="softmax"))
     # Compile the model
     model.compile(
