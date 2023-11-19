@@ -95,7 +95,7 @@ def main():
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
     )
     # preprocess
-    train_ds, test_ds = preprocess_data(train_ds, test_ds, batch_size=128)
+    train_ds, test_ds = preprocess_data(train_ds, test_ds, batch_size=64)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 
