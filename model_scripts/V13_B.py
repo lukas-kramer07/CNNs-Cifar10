@@ -25,6 +25,9 @@ from keras.layers import (
     Flatten,
     BatchNormalization,
     Dropout,
+    Layer,
+    Add,
+    AveragePooling2D,
 )
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
@@ -90,7 +93,7 @@ def main():
     model_A = build_model_A()
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
-
+    model_A.summary()
 
 def test_model(model, model_name, train_ds, test_ds):
     # define callbacks
@@ -197,7 +200,6 @@ def build_model_A():
         res_blocks.add(ResCell(channels, strides=2, name=f"res_cell-{n}-1"))
         res_blocks.add(ResCell(channels, name=f"res_cell-{n}-2"))
         res_blocks.add(ResCell(channels, name=f"res_cell-{n}-3"))
-        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-4"))
 
     res_blocks.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
     res_blocks.add(Flatten())
@@ -207,23 +209,23 @@ def build_model_A():
     output = tf.keras.Sequential(
         [
             Dense(
-                HP_NUM_UNITS1,
+                300,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
+                kernel_regularizer=tf.keras.regularizers.L2(0.01),
             ),
             BatchNormalization(),
-            Dropout(rate=HP_DROPOUT),
+            Dropout(rate=0.1),
             Dense(
-                HP_NUM_UNITS2,
+                150,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
+                kernel_regularizer=tf.keras.regularizers.L2(0.01),
             ),
             BatchNormalization(),
-            Dropout(rate=HP_DROPOUT),
+            Dropout(rate=0.1),
             Dense(
-                HP_NUM_UNITS3,
+                50,
                 activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
+                kernel_regularizer=tf.keras.regularizers.L2(0.01),
             ),
             BatchNormalization(),
             Dense(10, activation="softmax"),
@@ -234,7 +236,7 @@ def build_model_A():
 
     # Compile the model
     model.compile(
-        optimizer=Adam(learning_rate=HP_LEARNING_RATE),
+        optimizer=Adam(learning_rate=0.01),
         loss=CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
