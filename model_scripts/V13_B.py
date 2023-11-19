@@ -101,7 +101,7 @@ def main():
 
     # Test model A
     model_name = "V13_A"
-    config = [2,2,2,2]
+    config = [3,4,6,3]
     model_A = build_model_A(config)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
