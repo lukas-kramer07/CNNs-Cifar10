@@ -27,7 +27,7 @@ from keras.layers import (
     Dropout,
     Layer,
     Add,
-    GlobalMaxPooling2D,
+    GlobalAveragePooling2D,
 )
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
@@ -185,7 +185,7 @@ def build_model_A(config):
     model.add(InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)))
     model.add(
         Conv2D(
-            filters=32,
+            filters=64,
             kernel_size=7,
             strides=1,
             padding="same",
@@ -195,12 +195,11 @@ def build_model_A(config):
     )
     model.add(BatchNormalization())
     model.add(MaxPool2D(pool_size=2, strides=2))
-    model.add(Dropout(rate=0.1))
 
     # Residual blocks
     for reps, groups in enumerate(config):
         for n in range(groups):
-            channels = 32 * (2**reps)
+            channels = 64 * (2**reps)
             if n == 0 and reps == 0:
                 model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-1"))
             elif n== 0:
@@ -208,7 +207,7 @@ def build_model_A(config):
             else:
                 model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-2"))
 
-    model.add(GlobalMaxPooling2D())
+    model.add(GlobalAveragePooling2D())
     model.add(Dense(10, activation="softmax"))
     # Compile the model
     model.compile(
