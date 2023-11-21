@@ -163,3 +163,5 @@ cython_debug/
 run_all.py
 test.py
 /logs/untitled_project/
+/model_checkpoints/V13_A/
+/model_checkpoints/training_checkpoints/V13_A/
