@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
-from V11_D import preprocess_data
+from V11_E import preprocess_data
 from V11_E import visualize_data
 from keras import backend as K
 from keras.callbacks import (
@@ -27,8 +27,11 @@ from keras.layers import (
     Dropout,
     Layer,
     Add,
+    ReLU,
     GlobalAveragePooling2D,
 )
+from keras import Model
+from keras import layers as Layers
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
 
@@ -48,44 +51,31 @@ class_names = [
 ]
 
 
-class ResCell(Layer):
-    def __init__(self, channels, strides=1, name="res_cell"):
-        super(ResCell, self).__init__(name=name)
+class ResBlock(Model):
+    def __init__(self, channels, stride=1, name='Resblock'):
+        super(ResBlock, self).__init__(name=name)
+        self.flag = stride != 1
+        self.conv1 = Conv2D(channels, 3, stride, padding="same")
+        self.bn1 = BatchNormalization()
+        self.conv2 = Conv2D(channels, 3, padding="same")
+        self.bn2 = BatchNormalization()
+        self.relu = ReLU()
+        if self.flag:
+            self.bn3 = BatchNormalization()
+            self.conv3 = Conv2D(channels, 1, stride)
 
-        self.res_conv = True if strides != 1 else False
-        self.conv1 = Conv2D(
-            filters=channels,
-            kernel_size=3,
-            strides=strides,
-            padding="same",
-        )
-        self.conv2 = Conv2D(
-            filters=channels,
-            kernel_size=3,
-            padding="same",
-        )
-        self.norm = BatchNormalization(axis=3)
-        self.activation = Activation('relu')
-
-        if self.res_conv:
-            self.conv3 = Conv2D(
-                filters=channels, kernel_size=1, strides=strides,
-            )
-
-    def call(self, input, training):
-        x = self.conv1(input)
-        x = self.norm(x)
-        x = self.activation(x)
-        x = self.conv2(x)
-        x = self.norm(x)
-
-        if self.res_conv:
-            residue = self.conv3(input)
-            residue = self.norm(residue, training)
-            result = Add()([x, residue])
-        else:
-            result = Add()([x, input])
-        return self.activation(result)
+    def call(self, x):
+        x1 = self.conv1(x)
+        x1 = self.bn1(x1)
+        x1 = self.relu(x1)
+        x1 = self.conv2(x1)
+        x1 = self.bn2(x1)
+        if self.flag:
+            x = self.conv3(x)
+            x = self.bn3(x)
+        x1 = Layers.add([x, x1])
+        x1 = self.relu(x1)
+        return x1
 
 
 def main():
@@ -101,11 +91,10 @@ def main():
 
     # Test model A
     model_name = "V13_A"
-    config = [2,2,2,2]
+    config = [2, 2, 2, 2]
     model_A = build_model_A(config)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
-    model_A.summary()
 
 
 def test_model(model, model_name, train_ds, test_ds):
@@ -201,11 +190,11 @@ def build_model_A(config):
         for n in range(groups):
             channels = 64 * (2**reps)
             if n == 0 and reps == 0:
-                model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-1"))
-            elif n== 0:
-                model.add(ResCell(channels, strides=2, name=f"res_cell-{reps}-{n}-1"))
+                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-1"))
+            elif n == 0:
+                model.add(ResBlock(channels, stride=2, name=f"res_cell-{reps}-{n}-1"))
             else:
-                model.add(ResCell(channels, name=f"res_cell-{reps}-{n}-2"))
+                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-2"))
 
     model.add(GlobalAveragePooling2D())
     model.add(Dense(10, activation="softmax"))
