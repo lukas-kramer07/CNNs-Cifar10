@@ -51,7 +51,7 @@ class_names = [
 ]
 
 
-class ResBlock(Model):
+'''class ResBlock(Layer):
     def __init__(self, channels, stride=1, name='Resblock'):
         super(ResBlock, self).__init__(name=name)
         self.flag = stride != 1
@@ -75,7 +75,7 @@ class ResBlock(Model):
             x = self.bn3(x)
         x1 = Layers.add([x, x1])
         x1 = self.relu(x1)
-        return x1
+        return x1'''
 
 
 def main():
