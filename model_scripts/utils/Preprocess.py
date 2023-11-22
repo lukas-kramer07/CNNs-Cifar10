@@ -29,9 +29,9 @@ def create_transform(IM_SIZE):
             # 'mechanical' transformations
             A.HorizontalFlip(p=0.5),
             A.RandomResizedCrop(IM_SIZE, IM_SIZE, scale=(0.75, 1), p=0.75),
-            #A.ShiftScaleRotate(
-            #    shift_limit=0.1, scale_limit=0.2, rotate_limit=45, p=0.75
-            #),
+            A.ShiftScaleRotate(
+                shift_limit=0.1, scale_limit=0.2, rotate_limit=45, p=0.75
+            ),
         ]
     )
     return transforms
