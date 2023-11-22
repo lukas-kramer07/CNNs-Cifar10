@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
-from V11_E import preprocess_data
 from V11_E import visualize_data
 from keras import backend as K
 from keras.callbacks import (
@@ -36,7 +35,7 @@ from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 class_names = [
     "airplane",
     "automobile",
@@ -49,34 +48,6 @@ class_names = [
     "ship",
     "truck",
 ]
-
-
-"""class ResBlock(Layer):
-    def __init__(self, channels, stride=1, name='Resblock'):
-        super(ResBlock, self).__init__(name=name)
-        self.flag = stride != 1
-        self.conv1 = Conv2D(channels, 3, stride, padding="same")
-        self.bn1 = BatchNormalization()
-        self.conv2 = Conv2D(channels, 3, padding="same")
-        self.bn2 = BatchNormalization()
-        self.relu = ReLU()
-        if self.flag:
-            self.bn3 = BatchNormalization()
-            self.conv3 = Conv2D(channels, 1, stride)
-
-    def call(self, x):
-        x1 = self.conv1(x)
-        x1 = self.bn1(x1)
-        x1 = self.relu(x1)
-        x1 = self.conv2(x1)
-        x1 = self.bn2(x1)
-        if self.flag:
-            x = self.conv3(x)
-            x = self.bn3(x)
-        x1 = Layers.add([x, x1])
-        x1 = self.relu(x1)
-        return x1"""
-
 
 class ResBlock(Layer):
     def __init__(self, channels, stride=1, name="res_block"):
@@ -115,7 +86,7 @@ def main():
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
     )
     # preprocess
-    train_ds, test_ds = preprocess_data(train_ds, test_ds, batch_size=64)
+    train_ds, test_ds = utils.preprocess_data(train_ds, test_ds, batch_size=BATCH_SIZE, IM_SIZE=IM_SIZE, class_names=class_names)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 

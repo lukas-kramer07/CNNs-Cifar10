@@ -29,13 +29,9 @@ def create_transform(IM_SIZE):
             # 'mechanical' transformations
             A.HorizontalFlip(p=0.5),
             A.RandomResizedCrop(IM_SIZE, IM_SIZE, scale=(0.75, 1), p=0.75),
-            # 'image quality' transformations
-            A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
-            A.HueSaturationValue(
-                hue_shift_limit=0.04, sat_shift_limit=0.1, val_shift_limit=0.1, p=0.9
-            ),
-            A.RandomGamma(gamma_limit=(80, 120), p=0.5),
-            A.Sharpen(alpha=(0.2, 0.4), lightness=(0.5, 0.8), p=0.3),
+            #A.ShiftScaleRotate(
+            #    shift_limit=0.1, scale_limit=0.2, rotate_limit=45, p=0.75
+            #),
         ]
     )
     return transforms
@@ -44,7 +40,9 @@ def create_transform(IM_SIZE):
 def preprocess_data(train_ds, test_ds, batch_size, IM_SIZE, class_names):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
     augment_func = partial(augment, IM_SIZE=IM_SIZE)
-    resize_rescale_func = partial(resize_rescale, IM_SIZE=IM_SIZE, class_names=class_names)
+    resize_rescale_func = partial(
+        resize_rescale, IM_SIZE=IM_SIZE, class_names=class_names
+    )
     train_ds = (
         train_ds.map(resize_rescale_func, num_parallel_calls=AUTOTUNE)
         .cache()
