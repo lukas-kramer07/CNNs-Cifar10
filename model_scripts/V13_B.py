@@ -51,7 +51,7 @@ class_names = [
 ]
 
 
-'''class ResBlock(Layer):
+"""class ResBlock(Layer):
     def __init__(self, channels, stride=1, name='Resblock'):
         super(ResBlock, self).__init__(name=name)
         self.flag = stride != 1
@@ -75,33 +75,38 @@ class_names = [
             x = self.bn3(x)
         x1 = Layers.add([x, x1])
         x1 = self.relu(x1)
-        return x1'''
+        return x1"""
+
+
 class ResBlock(Layer):
-        def __init__(self, channels, stride=1, name="res_block"):
-            super(ResBlock, self).__init__(name=name)
+    def __init__(self, channels, stride=1, name="res_block"):
+        super(ResBlock, self).__init__(name=name)
 
-            self.res_conv = stride != 1
-            self.conv1 = Conv2D(
-                filters=channels, kernel_size=3, strides=stride, padding="same"
-            )
-            self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
-            self.norm = BatchNormalization()
-            self.relu = ReLU()
-            if self.res_conv:
-                self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=stride)
+        self.res_conv = stride != 1
+        self.conv1 = Conv2D(
+            filters=channels, kernel_size=3, strides=stride, padding="same"
+        )
+        self.norm1 = BatchNormalization()
+        self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
+        self.norm2 = BatchNormalization()
+        self.relu = ReLU()
+        if self.res_conv:
+            self.norm3 = BatchNormalization()
+            self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=stride)
 
-        def call(self, input, training):
-            x = self.conv1(input)
-            x = self.norm(x, training)
-            x= self.relu(x)
-            x = self.conv2(x)
-            x = self.norm(x, training)
+    def call(self, input, training):
+        x = self.conv1(input)
+        x = self.norm1(x, training)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.norm2(x, training)
 
-            if self.res_conv:
-                input = self.conv3(input)
-                input = self.norm(input, training)
-            result = Add()([x, input])
-            return self.relu(result)
+        if self.res_conv:
+            input = self.conv3(input)
+            input = self.norm3(input, training)
+        result = Add()([x, input])
+        return self.relu(result)
+
 
 def main():
     """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
