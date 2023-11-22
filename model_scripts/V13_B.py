@@ -21,16 +21,12 @@ from keras.layers import (
     MaxPool2D,
     Dense,
     InputLayer,
-    Activation,
     BatchNormalization,
-    Dropout,
     Layer,
     Add,
     ReLU,
     GlobalAveragePooling2D,
 )
-from keras import Model
-from keras import layers as Layers
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
 
@@ -128,7 +124,7 @@ def test_model(model, model_name, train_ds, test_ds):
     plateau_callback = ReduceLROnPlateau(
         monitor="val_accuracy",
         factor=0.1,
-        patience=3,
+        patience=5,
         verbose=1,
         mode="auto",
         min_delta=0.0001,
@@ -147,7 +143,7 @@ def test_model(model, model_name, train_ds, test_ds):
     # train for 20 epochs
     history = model.fit(
         train_ds,
-        epochs=30,
+        epochs=40,
         validation_data=test_ds,
         callbacks=[
             stop_early,
