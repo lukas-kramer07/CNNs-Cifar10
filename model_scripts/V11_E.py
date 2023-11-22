@@ -6,7 +6,6 @@ import albumentations as A
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
-from pytz import BaseTzInfo
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import utils
