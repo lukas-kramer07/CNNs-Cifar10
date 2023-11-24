@@ -28,13 +28,13 @@ def create_transform(IM_SIZE):
         [
             # 'mechanical' transformations
             A.HorizontalFlip(p=0.5),
-            A.RandomResizedCrop(IM_SIZE, IM_SIZE, scale=(0.75, 1), p=0.75),
             A.ShiftScaleRotate(
-                shift_limit=0.05, scale_limit=0.1, rotate_limit=25, p=0.75
+                shift_limit=0.1, scale_limit=0, rotate_limit=10, p=0.75
             ),
-            #A.ElasticTransform(
+            # A.ElasticTransform(
             #    alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03, p=0.5
-            #),
+            # ),
+            A.RandomResizedCrop(IM_SIZE, IM_SIZE, scale=(0.8, 1), p=0.75),
         ]
     )
     return transforms
