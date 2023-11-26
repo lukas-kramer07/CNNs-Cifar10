@@ -45,6 +45,7 @@ class_names = [
     "truck",
 ]
 
+
 # TODO: Check for improved architecture
 class ResBlock(Layer):
     def __init__(self, channels, stride=1, name="res_block"):
@@ -75,23 +76,26 @@ class ResBlock(Layer):
         result = Add()([x, input])
         return self.relu(result)
 
+
 class ResBottleneck(Layer):
-    def __init__(self, channels, stride=1, name='res_bottleneck_block'):
+    def __init__(self, channels, stride=1, name="res_bottleneck_block"):
         super(ResBottleneck, self).__init__(name=name)
 
         self.res_conv = stride != 1
         self.conv1 = Conv2D(filters=channels, kernel_size=1, padding="same")
         self.norm1 = BatchNormalization()
 
-        self.conv2 = Conv2D(filters=channels, kernel_size=3, strides=stride, padding="same")
+        self.conv2 = Conv2D(
+            filters=channels, kernel_size=3, strides=stride, padding="same"
+        )
         self.norm2 = BatchNormalization()
 
-        self.conv3 = Conv2D(filters= channels*4, kernel_size=1, paddin='same')
+        self.conv3 = Conv2D(filters=channels * 4, kernel_size=1, paddin="same")
         self.norm3 = BatchNormalization()
         self.relu = ReLU()
         if self.res_conv:
             self.norm4 = BatchNormalization()
-            self.conv4 = Conv2D(filters=channels*4, kernel_size=1, strides=stride)
+            self.conv4 = Conv2D(filters=channels * 4, kernel_size=1, strides=stride)
 
     def call(self, input, training):
         x = self.conv1(input)
@@ -107,6 +111,8 @@ class ResBottleneck(Layer):
             input = self.norm4(input, training)
         result = Add()([x, input])
         return self.relu(result)
+
+
 def main():
     """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
     # load dataset
@@ -114,13 +120,19 @@ def main():
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
     )
     # preprocess
-    train_ds, test_ds = utils.preprocess_data(train_ds, test_ds, batch_size=BATCH_SIZE, IM_SIZE=IM_SIZE, class_names=class_names)
+    train_ds, test_ds = utils.preprocess_data(
+        train_ds,
+        test_ds,
+        batch_size=BATCH_SIZE,
+        IM_SIZE=IM_SIZE,
+        class_names=class_names,
+    )
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 
     # Test model A
     model_name = "V13_A"
-    config = [3, 4, 6, 3] #ResNet34
+    config = ([3, 4, 6, 3], ResBlock)  # ResNet34 or ResNet50
     model_A = build_model_A(config)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
@@ -197,6 +209,7 @@ def test_model(model, model_name, train_ds, test_ds):
 
 
 def build_model_A(config):
+    reslayer_config, ResBlock = config
     model = tf.keras.Sequential()
 
     # Input block
@@ -215,7 +228,7 @@ def build_model_A(config):
     model.add(MaxPool2D(pool_size=2, strides=2))
 
     # Residual blocks
-    for reps, groups in enumerate(config):
+    for reps, groups in enumerate(reslayer_config):
         for n in range(groups):
             channels = 64 * (2**reps)
             if n == 0 and reps == 0:
