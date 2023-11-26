@@ -45,6 +45,7 @@ class_names = [
     "truck",
 ]
 
+# TODO: Check for improved architecture
 class ResBlock(Layer):
     def __init__(self, channels, stride=1, name="res_block"):
         super(ResBlock, self).__init__(name=name)
@@ -74,7 +75,38 @@ class ResBlock(Layer):
         result = Add()([x, input])
         return self.relu(result)
 
+class ResBottleneck(Layer):
+    def __init__(self, channels, stride=1, name='res_bottleneck_block'):
+        super(ResBottleneck, self).__init__(name=name)
 
+        self.res_conv = stride != 1
+        self.conv1 = Conv2D(filters=channels, kernel_size=1, padding="same")
+        self.norm1 = BatchNormalization()
+
+        self.conv2 = Conv2D(filters=channels, kernel_size=3, strides=stride, padding="same")
+        self.norm2 = BatchNormalization()
+
+        self.conv3 = Conv2D(filters= channels*4, kernel_size=1, paddin='same')
+        self.norm3 = BatchNormalization()
+        self.relu = ReLU()
+        if self.res_conv:
+            self.norm4 = BatchNormalization()
+            self.conv4 = Conv2D(filters=channels*4, kernel_size=1, strides=stride)
+
+    def call(self, input, training):
+        x = self.conv1(input)
+        x = self.norm1(x, training)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.norm2(x, training)
+        x = self.relu(x)
+        x = self.conv3(x)
+        x = self.norm3(x)
+        if self.res_conv:
+            input = self.conv4(input)
+            input = self.norm4(input, training)
+        result = Add()([x, input])
+        return self.relu(result)
 def main():
     """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
     # load dataset
