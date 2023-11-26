@@ -2,6 +2,7 @@
 HP tuning for new Res-Net architecture
 """
 
+from calendar import c
 import os
 import keras_tuner as kt
 import tensorflow as tf
@@ -77,47 +78,47 @@ def main():
 
 def build_model_base(
     HP_NUM_FILTERS_1,
-    HP_NUM_RESBLOCKS,
-    HP_NUM_UNITS1,
-    HP_NUM_UNITS2,
-    HP_NUM_UNITS3,
+    config,
     HP_REGULARIZATION_RATE,
-    HP_DROPOUT,
     HP_LEARNING_RATE,
 ):
+    config, bottleneck = config
     model = tf.keras.Sequential()
 
     # Input block
     model.add(InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)))
     model.add(
         Conv2D(
-            filters=64,
+            filters=HP_NUM_FILTERS_1,
             kernel_size=7,
             strides=1,
             padding="same",
             activation="relu",
-            kernel_regularizer=tf.keras.regularizers.L2(0.001),
+            kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
         )
     )
     model.add(BatchNormalization())
     model.add(MaxPool2D(pool_size=2, strides=2))
 
     # Residual blocks
-    for reps, groups in enumerate(config):
-        for n in range(groups):
-            channels = 64 * (2**reps)
-            if n == 0 and reps == 0:
-                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-1"))
-            elif n == 0:
-                model.add(ResBlock(channels, stride=2, name=f"res_cell-{reps}-{n}-1"))
-            else:
-                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-2"))
-
+    if not bottleneck:
+        for reps, groups in enumerate(config):
+            for n in range(groups):
+                channels = 64 * (2**reps)
+                if n == 0 and reps == 0:
+                    model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-1"))
+                elif n == 0:
+                    model.add(ResBlock(channels, stride=2, name=f"res_cell-{reps}-{n}-1"))
+                else:
+                    model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-2"))
+    if bottleneck:
+        #TODO
+        pass
     model.add(GlobalAveragePooling2D())
     model.add(Dense(10, activation="softmax"))
     # Compile the model
     model.compile(
-        optimizer=Adam(learning_rate=0.001),
+        optimizer=Adam(learning_rate=HP_LEARNING_RATE),
         loss=CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
@@ -128,21 +129,14 @@ def build_model_base(
 def build_tuner(hp):
     # HPARAMS
     HP_NUM_FILTERS_1 = hp.Int("num_filters_1", 4, 64)
-    HP_NUM_RESBLOCKS = hp.Int("num_resblocks_1", 1, 4)
-    HP_NUM_UNITS1 = hp.Int("num_units_1", 64, 128)
-    HP_NUM_UNITS2 = hp.Int("num_units_2", 32, 128)
-    HP_NUM_UNITS3 = hp.Int("num_units_3", 16, 64)
     HP_REGULARIZATION_RATE = hp.Float("regularization_rate", 0.001, 0.3)
-    HP_DROPOUT = hp.Float("dropout", 0.01, 0.3)
+    bottleneck = hp.Choice('config', (True, False))
+    config = ([3, 4, 6, 3], bottleneck)
     HP_LEARNING_RATE = hp.Float("learning_rate", 0.0001, 0.01)
     model = build_model_base(
         HP_NUM_FILTERS_1=HP_NUM_FILTERS_1,
-        HP_NUM_RESBLOCKS=HP_NUM_RESBLOCKS,
-        HP_NUM_UNITS1=HP_NUM_UNITS1,
-        HP_NUM_UNITS2=HP_NUM_UNITS2,
-        HP_NUM_UNITS3=HP_NUM_UNITS3,
+        config=config,
         HP_LEARNING_RATE=HP_LEARNING_RATE,
-        HP_DROPOUT=HP_DROPOUT,
         HP_REGULARIZATION_RATE=HP_REGULARIZATION_RATE,
     )
     return model
