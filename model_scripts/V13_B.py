@@ -48,10 +48,16 @@ class_names = [
 
 # TODO: Check for improved architecture
 class ResBlock(Layer):
-    def __init__(self, channels, stride=1, name="res_block"):
+    def __init__(self, channels, stride=1, name="res_block", cut="pre"):
         super(ResBlock, self).__init__(name=name)
 
-        self.res_conv = stride != 1
+        # defining shortcut connection
+        if cut == "pre":
+            self.res_conv = False
+        elif cut == "post":
+            self.res_conv = True
+        else:
+            raise ValueError('Cut type not in ["pre", "post"]')
         self.conv1 = Conv2D(
             filters=channels, kernel_size=3, strides=stride, padding="same"
         )
@@ -78,10 +84,16 @@ class ResBlock(Layer):
 
 
 class ResBottleneck(Layer):
-    def __init__(self, channels, stride=1, name="res_bottleneck_block"):
+    def __init__(self, channels, stride=1, name="res_bottleneck_block", cut="pre"):
         super(ResBottleneck, self).__init__(name=name)
 
-        self.res_conv = stride != 1
+        # defining shortcut connection
+        if cut == "pre":
+            self.res_conv = False
+        elif cut == "post":
+            self.res_conv = True
+        else:
+            raise ValueError('Cut type not in ["pre", "post"]')
         self.conv1 = Conv2D(filters=channels, kernel_size=1, padding="same")
         self.norm1 = BatchNormalization()
 
@@ -90,7 +102,7 @@ class ResBottleneck(Layer):
         )
         self.norm2 = BatchNormalization()
 
-        self.conv3 = Conv2D(filters=channels * 4, kernel_size=1, paddin="same")
+        self.conv3 = Conv2D(filters=channels * 4, kernel_size=1, padding="same")
         self.norm3 = BatchNormalization()
         self.relu = ReLU()
         if self.res_conv:
@@ -132,7 +144,7 @@ def main():
 
     # Test model A
     model_name = "V13_A"
-    config = ([3, 4, 6, 3], ResBlock)  # ResNet34 or ResNet50
+    config = ([3, 4, 6, 3], ResBottleneck)  # ResNet34 or ResNet50
     model_A = build_model_A(config)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
@@ -232,11 +244,15 @@ def build_model_A(config):
         for n in range(groups):
             channels = 64 * (2**reps)
             if n == 0 and reps == 0:
-                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-1"))
+                model.add(ResBlock(channels, cut="post", name=f"res_cell-{reps}-{n}-1"))
             elif n == 0:
-                model.add(ResBlock(channels, stride=2, name=f"res_cell-{reps}-{n}-1"))
+                model.add(
+                    ResBlock(
+                        channels, stride=2, cut="post", name=f"res_cell-{reps}-{n}-1"
+                    )
+                )
             else:
-                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-2"))
+                model.add(ResBlock(channels, cut="pre", name=f"res_cell-{reps}-{n}-2"))
 
     model.add(GlobalAveragePooling2D())
     model.add(Dense(10, activation="softmax"))
