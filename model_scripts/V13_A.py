@@ -19,11 +19,9 @@ from keras.layers import (
     MaxPool2D,
     Dense,
     InputLayer,
-    Flatten,
     BatchNormalization,
     Layer,
-    Dropout,
-    AveragePooling2D,
+    GlobalAveragePooling2D,
     Add,
 )
 from keras.optimizers import Adam
@@ -34,33 +32,34 @@ BATCH_SIZE = 32
 MAX_TRIALS = 40
 
 
-class ResCell(Layer):
-    def __init__(self, channels, strides=1, name="res_cell"):
-        super(ResCell, self).__init__(name=name)
+class ResBlock(Layer):
+    def __init__(self, channels, stride=1, name="res_block"):
+        super(ResBlock, self).__init__(name=name)
 
-        self.res_conv = strides != 1
+        self.res_conv = stride != 1
         self.conv1 = Conv2D(
-            filters=channels, kernel_size=3, strides=strides, padding="same"
+            filters=channels, kernel_size=3, strides=stride, padding="same"
         )
+        self.norm1 = BatchNormalization()
         self.conv2 = Conv2D(filters=channels, kernel_size=3, padding="same")
-        self.norm = BatchNormalization()
-        self.activation = tf.keras.activations.relu
+        self.norm2 = BatchNormalization()
+        self.relu = ReLU()
         if self.res_conv:
-            self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=strides)
+            self.norm3 = BatchNormalization()
+            self.conv3 = Conv2D(filters=channels, kernel_size=1, strides=stride)
 
     def call(self, input, training):
         x = self.conv1(input)
-        x = self.norm(x, training)
+        x = self.norm1(x, training)
+        x = self.relu(x)
         x = self.conv2(x)
-        x = self.norm(x, training)
+        x = self.norm2(x, training)
 
         if self.res_conv:
-            residue = self.conv3(input)
-            residue = self.norm(residue, training)
-            result = Add()([x, residue])
-        else:
-            result = Add()([x, input])
-        return self.activation(result)
+            input = self.conv3(input)
+            input = self.norm3(input, training)
+        result = Add()([x, input])
+        return self.relu(result)
 
 
 def main():
@@ -86,70 +85,39 @@ def build_model_base(
     HP_DROPOUT,
     HP_LEARNING_RATE,
 ):
-    # Build the model
     model = tf.keras.Sequential()
 
     # Input block
     model.add(InputLayer(input_shape=(IM_SIZE, IM_SIZE, 3)))
     model.add(
         Conv2D(
-            filters=HP_NUM_FILTERS_1,
+            filters=64,
             kernel_size=7,
             strides=1,
             padding="same",
             activation="relu",
-            kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
+            kernel_regularizer=tf.keras.regularizers.L2(0.001),
         )
     )
     model.add(BatchNormalization())
     model.add(MaxPool2D(pool_size=2, strides=2))
-    model.add(Dropout(rate=HP_DROPOUT))
 
     # Residual blocks
-    res_blocks = tf.keras.Sequential()
-    for n in range(HP_NUM_RESBLOCKS):
-        channels = HP_NUM_FILTERS_1 * 2**n
-        res_blocks.add(ResCell(channels, strides=2, name=f"res_cell-{n}-1"))
-        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-2"))
-        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-3"))
-        res_blocks.add(ResCell(channels, name=f"res_cell-{n}-4"))
+    for reps, groups in enumerate(config):
+        for n in range(groups):
+            channels = 64 * (2**reps)
+            if n == 0 and reps == 0:
+                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-1"))
+            elif n == 0:
+                model.add(ResBlock(channels, stride=2, name=f"res_cell-{reps}-{n}-1"))
+            else:
+                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-2"))
 
-    res_blocks.add(AveragePooling2D(pool_size=(2, 2), padding="same"))
-    res_blocks.add(Flatten())
-    model.add(res_blocks)
-
-    # Output block
-    output = tf.keras.Sequential(
-        [
-            Dense(
-                HP_NUM_UNITS1,
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
-            ),
-            BatchNormalization(),
-            Dropout(rate=HP_DROPOUT),
-            Dense(
-                HP_NUM_UNITS2,
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
-            ),
-            BatchNormalization(),
-            Dropout(rate=HP_DROPOUT),
-            Dense(
-                HP_NUM_UNITS3,
-                activation="relu",
-                kernel_regularizer=tf.keras.regularizers.L2(HP_REGULARIZATION_RATE),
-            ),
-            BatchNormalization(),
-            Dense(10, activation="softmax"),
-        ]
-    )
-
-    model.add(output)
-
+    model.add(GlobalAveragePooling2D())
+    model.add(Dense(10, activation="softmax"))
     # Compile the model
     model.compile(
-        optimizer=Adam(learning_rate=HP_LEARNING_RATE),
+        optimizer=Adam(learning_rate=0.001),
         loss=CategoricalCrossentropy(),
         metrics=["accuracy"],
     )
