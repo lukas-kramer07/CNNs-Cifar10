@@ -106,8 +106,7 @@ class ResBottleneck(Layer):
         self.norm3 = BatchNormalization()
         self.relu = ReLU()
         if self.res_conv:
-            self.norm4 = BatchNormalization()
-            self.conv4 = Conv2D(filters=channels * 4, kernel_size=1, strides=stride)
+            self.conv4 = Conv2D(filters=channels * 4, kernel_size=1, strides=stride, '''padding="same"''')
 
     def call(self, input, training):
         x = self.conv1(input)
@@ -117,12 +116,30 @@ class ResBottleneck(Layer):
         x = self.norm2(x, training)
         x = self.relu(x)
         x = self.conv3(x)
-        x = self.norm3(x, training)
         if self.res_conv:
             input = self.conv4(input)
-            input = self.norm4(input, training)
         result = Add()([x, input])
+        result = self.norm3(result, training)
         return self.relu(result)
+
+
+"""
+    def layer(input_tensor):
+        # continue with convolution layers
+        x = layers.ZeroPadding2D(padding=(1, 1))(x)
+        x = layers.Conv2D(filters, (3, 3), strides=strides, name=conv_name + '2', **conv_params)(x)
+
+        x = layers.BatchNormalization(name=bn_name + '3', **bn_params)(x)
+        x = layers.Activation('relu', name=relu_name + '3')(x)
+        x = layers.Conv2D(filters * 4, (1, 1), name=conv_name + '3', **conv_params)(x)
+
+        # add residual connection
+        x = layers.Add()([x, shortcut])
+
+        return x
+
+    return layer
+"""
 
 
 def main():
