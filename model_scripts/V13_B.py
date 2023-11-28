@@ -31,7 +31,7 @@ from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 class_names = [
     "airplane",
     "automobile",
@@ -106,7 +106,7 @@ class ResBottleneck(Layer):
         self.norm3 = BatchNormalization()
         self.relu = ReLU()
         if self.res_conv:
-            self.conv4 = Conv2D(filters=channels * 4, kernel_size=1, strides=stride, '''padding="same"''')
+            self.conv4 = Conv2D(filters=channels * 4, kernel_size=1, strides=stride)
 
     def call(self, input, training):
         x = self.conv1(input)
@@ -121,26 +121,6 @@ class ResBottleneck(Layer):
         result = Add()([x, input])
         result = self.norm3(result, training)
         return self.relu(result)
-
-
-"""
-    def layer(input_tensor):
-        # continue with convolution layers
-        x = layers.ZeroPadding2D(padding=(1, 1))(x)
-        x = layers.Conv2D(filters, (3, 3), strides=strides, name=conv_name + '2', **conv_params)(x)
-
-        x = layers.BatchNormalization(name=bn_name + '3', **bn_params)(x)
-        x = layers.Activation('relu', name=relu_name + '3')(x)
-        x = layers.Conv2D(filters * 4, (1, 1), name=conv_name + '3', **conv_params)(x)
-
-        # add residual connection
-        x = layers.Add()([x, shortcut])
-
-        return x
-
-    return layer
-"""
-
 
 def main():
     """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
