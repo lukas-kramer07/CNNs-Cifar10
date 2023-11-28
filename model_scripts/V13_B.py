@@ -117,7 +117,7 @@ class ResBottleneck(Layer):
         x = self.norm2(x, training)
         x = self.relu(x)
         x = self.conv3(x)
-        x = self.norm3(x)
+        x = self.norm3(x, training)
         if self.res_conv:
             input = self.conv4(input)
             input = self.norm4(input, training)
@@ -167,7 +167,7 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    stop_early = EarlyStopping(monitor="val_loss", patience=4, verbose=1)
+    stop_early = EarlyStopping(monitor="val_loss", patience=7, verbose=1)
 
     def scheduler(epoch, lr):
         if epoch <= 3:
