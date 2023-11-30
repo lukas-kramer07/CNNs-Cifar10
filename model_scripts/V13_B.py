@@ -177,11 +177,11 @@ def test_model(model, model_name, train_ds, test_ds):
     plateau_callback = ReduceLROnPlateau(
         monitor="val_accuracy",
         factor=0.1,
-        patience=3,
+        patience=4,
         verbose=1,
         mode="auto",
         min_delta=0.1,
-        cooldown=0,
+        cooldown=15,
         min_lr=0,
     )
     checkpoint_callback = ModelCheckpoint(
