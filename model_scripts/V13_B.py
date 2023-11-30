@@ -2,7 +2,7 @@
 This script is a model version of the ResNet developed in V13_A
 """
 import datetime
-
+import collections
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -44,6 +44,10 @@ class_names = [
     "ship",
     "truck",
 ]
+
+ModelParams = collections.namedtuple(
+    "ModelParams", ["model_name", "repetitions", "residual_block", "attention"]
+)
 
 
 # TODO: Check for improved architecture
@@ -122,6 +126,7 @@ class ResBottleneck(Layer):
         result = self.norm3(result, training)
         return self.relu(result)
 
+
 def main():
     """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
     # load dataset
@@ -141,8 +146,16 @@ def main():
 
     # Test model A
     model_name = "V13_A"
-    config = ([3, 4, 6, 3], ResBottleneck)  # ResNet34 or ResNet50
-    model_A = build_model_A(config)
+    resnet50 = (
+        ModelParams("resnet50", (3, 4, 6, 3), residual_bottleneck_block, None)
+    )  # ResNet34 or ResNet50
+    model_A = ResNet(
+        model_params=resnet50,
+        input_shape=(IM_SIZE,IM_SIZE,3),
+        input_tensor=None,
+        include_top=True,
+        classes=10
+    )
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
@@ -260,6 +273,163 @@ def build_model_A(config):
         metrics=["accuracy"],
     )
 
+    return model
+
+
+import keras.layers as layers
+import keras.models as models
+
+
+def handle_block_names(stage, block):
+    name_base = "stage{}_unit{}_".format(stage + 1, block + 1)
+    conv_name = name_base + "conv"
+    bn_name = name_base + "bn"
+    relu_name = name_base + "relu"
+    sc_name = name_base + "sc"
+    return conv_name, bn_name, relu_name, sc_name
+
+
+def residual_bottleneck_block(
+    filters, stage, block, strides=None, attention=None, cut="pre"
+):
+    """The identity block is the block that has no conv layer at shortcut.
+    # Arguments
+        input_tensor: input tensor
+        kernel_size: default 3, the kernel size of
+            middle conv layer at main path
+        filters: list of integers, the filters of 3 conv layer at main path
+        stage: integer, current stage label, used for generating layer names
+        block: 'a','b'..., current block label, used for generating layer names
+        cut: one of 'pre', 'post'. used to decide where skip connection is taken
+    # Returns
+        Output tensor for the block.
+    """
+
+    def layer(input_tensor):
+        # get params and names of layers
+        conv_name, bn_name, relu_name, sc_name = handle_block_names(stage, block)
+
+        x = layers.BatchNormalization(name=bn_name + "1")(input_tensor)
+        x = layers.Activation("relu", name=relu_name + "1")(x)
+
+        # defining shortcut connection
+        if cut == "pre":
+            shortcut = input_tensor
+        elif cut == "post":
+            shortcut = layers.Conv2D(
+                filters * 4, (1, 1), name=sc_name, strides=strides
+            )(x)
+        else:
+            raise ValueError('Cut type not in ["pre", "post"]')
+
+        # continue with convolution layers
+        x = layers.Conv2D(filters, (1, 1), name=conv_name + "1")(x)
+
+        x = layers.BatchNormalization(name=bn_name + "2")(x)
+        x = layers.Activation("relu", name=relu_name + "2")(x)
+        x = layers.ZeroPadding2D(padding=(1, 1))(x)
+        x = layers.Conv2D(filters, (3, 3), strides=strides, name=conv_name + "2")(x)
+
+        x = layers.BatchNormalization(name=bn_name + "3")(x)
+        x = layers.Activation("relu", name=relu_name + "3")(x)
+        x = layers.Conv2D(filters * 4, (1, 1), name=conv_name + "3")(x)
+
+        # use attention block if defined
+        if attention is not None:
+            x = attention(x)
+
+        # add residual connection
+        x = layers.Add()([x, shortcut])
+
+        return x
+
+    return layer
+
+
+# -------------------------------------------------------------------------
+#   Residual Model Builder
+# -------------------------------------------------------------------------
+
+
+def ResNet(
+    model_params,
+    input_shape=None,
+    input_tensor=None,
+    include_top=True,
+    classes=10,
+    weights="imagenet",
+    **kwargs,
+):
+    print(type(model_params))
+    # choose residual block type
+    ResidualBlock = model_params.residual_block
+
+    # get parameters for model layers
+    init_filters = 64
+
+    if input_tensor is None:
+        img_input = layers.Input(shape=input_shape, name="data")
+    else:
+        img_input = input_tensor
+    # resnet bottom
+    x = layers.BatchNormalization(name="bn_data")(img_input)
+    x = layers.ZeroPadding2D(padding=(3, 3))(x)
+    x = layers.Conv2D(init_filters, (7, 7), strides=(2, 2), name="conv0")(x)
+    x = layers.BatchNormalization(name="bn0")(x)
+    x = layers.Activation("relu", name="relu0")(x)
+    x = layers.ZeroPadding2D(padding=(1, 1))(x)
+    x = layers.MaxPooling2D((3, 3), strides=(2, 2), padding="valid", name="pooling0")(x)
+
+    # resnet body
+    for stage, rep in enumerate(model_params.repetitions):
+        for block in range(rep):
+            filters = init_filters * (2**stage)
+
+            # first block of first stage without strides because we have maxpooling before
+            if block == 0 and stage == 0:
+                x = ResidualBlock(
+                    filters,
+                    stage,
+                    block,
+                    strides=(1, 1),
+                    cut="post",
+                )(x)
+
+            elif block == 0:
+                x = ResidualBlock(
+                    filters,
+                    stage,
+                    block,
+                    strides=(2, 2),
+                    cut="post",
+                )(x)
+
+            else:
+                x = ResidualBlock(
+                    filters,
+                    stage,
+                    block,
+                    strides=(1, 1),
+                    cut="pre",
+                )(x)
+
+    x = layers.BatchNormalization(name="bn1")(x)
+    x = layers.Activation("relu", name="relu1")(x)
+
+    # resnet top
+    if include_top:
+        x = layers.GlobalAveragePooling2D(name="pool1")(x)
+        x = layers.Dense(classes, name="fc1")(x)
+        x = layers.Activation("softmax", name="softmax")(x)
+
+    inputs = img_input
+    # Create model.
+    model = models.Model(inputs, x)
+    model.compile(
+        optimizer=Adam(learning_rate=0.001),
+        loss=CategoricalCrossentropy(),
+        metrics=["accuracy"],
+    )
     return model
 
 
