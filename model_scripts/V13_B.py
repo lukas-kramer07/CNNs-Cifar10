@@ -146,15 +146,15 @@ def main():
 
     # Test model A
     model_name = "V13_A"
-    resnet50 = (
-        ModelParams("resnet50", (3, 4, 6, 3), residual_bottleneck_block, None)
+    resnet50 = ModelParams(
+        "resnet50", (3, 4, 6, 3), residual_bottleneck_block, None
     )  # ResNet34 or ResNet50
     model_A = ResNet(
         model_params=resnet50,
-        input_shape=(IM_SIZE,IM_SIZE,3),
+        input_shape=(IM_SIZE, IM_SIZE, 3),
         input_tensor=None,
         include_top=True,
-        classes=10
+        classes=10,
     )
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
@@ -278,6 +278,7 @@ def build_model_A(config):
 
 import keras.layers as layers
 import keras.models as models
+from keras import backend
 
 
 def handle_block_names(stage, block):
@@ -287,6 +288,29 @@ def handle_block_names(stage, block):
     relu_name = name_base + "relu"
     sc_name = name_base + "sc"
     return conv_name, bn_name, relu_name, sc_name
+
+
+def get_conv_params(**params):
+    default_conv_params = {
+        "kernel_initializer": "he_uniform",
+        "use_bias": False,
+        "padding": "valid",
+    }
+    default_conv_params.update(params)
+    return default_conv_params
+
+
+def get_bn_params(**params):
+    axis = 3 if backend.image_data_format() == "channels_last" else 1
+    default_bn_params = {
+        "axis": axis,
+        "momentum": 0.99,
+        "epsilon": 2e-5,
+        "center": True,
+        "scale": True,
+    }
+    default_bn_params.update(params)
+    return default_bn_params
 
 
 def residual_bottleneck_block(
@@ -365,6 +389,9 @@ def ResNet(
     ResidualBlock = model_params.residual_block
 
     # get parameters for model layers
+    no_scale_bn_params = get_bn_params(scale=False)
+    bn_params = get_bn_params()
+    conv_params = get_conv_params()
     init_filters = 64
 
     if input_tensor is None:
@@ -372,10 +399,12 @@ def ResNet(
     else:
         img_input = input_tensor
     # resnet bottom
-    x = layers.BatchNormalization(name="bn_data")(img_input)
+    x = layers.BatchNormalization(name="bn_data", **no_scale_bn_params)(img_input)
     x = layers.ZeroPadding2D(padding=(3, 3))(x)
-    x = layers.Conv2D(init_filters, (7, 7), strides=(2, 2), name="conv0")(x)
-    x = layers.BatchNormalization(name="bn0")(x)
+    x = layers.Conv2D(
+        init_filters, (7, 7), strides=(2, 2), name="conv0", **conv_params
+    )(x)
+    x = layers.BatchNormalization(name="bn0", **bn_params)(x)
     x = layers.Activation("relu", name="relu0")(x)
     x = layers.ZeroPadding2D(padding=(1, 1))(x)
     x = layers.MaxPooling2D((3, 3), strides=(2, 2), padding="valid", name="pooling0")(x)
@@ -387,13 +416,7 @@ def ResNet(
 
             # first block of first stage without strides because we have maxpooling before
             if block == 0 and stage == 0:
-                x = ResidualBlock(
-                    filters,
-                    stage,
-                    block,
-                    strides=(1, 1),
-                    cut="post",
-                )(x)
+                x = ResidualBlock(filters,stage,block,strides=(1, 1),cut="post")(x)
 
             elif block == 0:
                 x = ResidualBlock(
@@ -413,7 +436,7 @@ def ResNet(
                     cut="pre",
                 )(x)
 
-    x = layers.BatchNormalization(name="bn1")(x)
+    x = layers.BatchNormalization(name="bn1", **bn_params)(x)
     x = layers.Activation("relu", name="relu1")(x)
 
     # resnet top
