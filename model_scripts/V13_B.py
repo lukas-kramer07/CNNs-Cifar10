@@ -331,9 +331,11 @@ def residual_bottleneck_block(
 
     def layer(input_tensor):
         # get params and names of layers
+        conv_params = get_conv_params()
+        bn_params = get_bn_params()
         conv_name, bn_name, relu_name, sc_name = handle_block_names(stage, block)
 
-        x = layers.BatchNormalization(name=bn_name + "1")(input_tensor)
+        x = layers.BatchNormalization(name=bn_name + "1", **bn_params)(input_tensor)
         x = layers.Activation("relu", name=relu_name + "1")(x)
 
         # defining shortcut connection
@@ -341,22 +343,24 @@ def residual_bottleneck_block(
             shortcut = input_tensor
         elif cut == "post":
             shortcut = layers.Conv2D(
-                filters * 4, (1, 1), name=sc_name, strides=strides
+                filters * 4, (1, 1), name=sc_name, strides=strides, **conv_params
             )(x)
         else:
             raise ValueError('Cut type not in ["pre", "post"]')
 
         # continue with convolution layers
-        x = layers.Conv2D(filters, (1, 1), name=conv_name + "1")(x)
+        x = layers.Conv2D(filters, (1, 1), name=conv_name + "1", **conv_params)(x)
 
-        x = layers.BatchNormalization(name=bn_name + "2")(x)
+        x = layers.BatchNormalization(name=bn_name + "2", **bn_params)(x)
         x = layers.Activation("relu", name=relu_name + "2")(x)
         x = layers.ZeroPadding2D(padding=(1, 1))(x)
-        x = layers.Conv2D(filters, (3, 3), strides=strides, name=conv_name + "2")(x)
+        x = layers.Conv2D(
+            filters, (3, 3), strides=strides, name=conv_name + "2", **conv_params
+        )(x)
 
-        x = layers.BatchNormalization(name=bn_name + "3")(x)
+        x = layers.BatchNormalization(name=bn_name + "3", **bn_params)(x)
         x = layers.Activation("relu", name=relu_name + "3")(x)
-        x = layers.Conv2D(filters * 4, (1, 1), name=conv_name + "3")(x)
+        x = layers.Conv2D(filters * 4, (1, 1), name=conv_name + "3", **conv_params)(x)
 
         # use attention block if defined
         if attention is not None:
@@ -381,7 +385,6 @@ def ResNet(
     input_tensor=None,
     include_top=True,
     classes=10,
-    weights="imagenet",
     **kwargs,
 ):
     print(type(model_params))
@@ -416,7 +419,7 @@ def ResNet(
 
             # first block of first stage without strides because we have maxpooling before
             if block == 0 and stage == 0:
-                x = ResidualBlock(filters,stage,block,strides=(1, 1),cut="post")(x)
+                x = ResidualBlock(filters, stage, block, strides=(1, 1), cut="post")(x)
 
             elif block == 0:
                 x = ResidualBlock(
