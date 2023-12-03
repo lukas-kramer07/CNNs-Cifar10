@@ -171,10 +171,10 @@ def test_model(model, model_name, train_ds, test_ds):
     stop_early = EarlyStopping(monitor="val_loss", patience=5, verbose=1)
 
     def scheduler(epoch, lr):
-        if epoch <= 5:
+        if epoch <= 4:
             lr = lr
-        elif epoch % 5 == 0:
-            lr = (lr * tf.math.exp(-0.4)).numpy()
+        elif epoch % 4 == 0:
+            lr = (lr * tf.math.exp(-0.35)).numpy()
         return lr
 
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
