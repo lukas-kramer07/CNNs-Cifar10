@@ -2,7 +2,6 @@
 This script is a model version of the ResNet developed in V13_A
 """
 import datetime
-from distutils.command import build
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -44,6 +43,7 @@ class_names = [
     "ship",
     "truck",
 ]
+
 
 # TODO: Check for improved architecture
 class ResBlock(Layer):
@@ -141,8 +141,12 @@ def main():
 
     # Test model A
     model_name = "V13_A"
-    config = (())
-    model_A = build_model_A(config)
+    config18 = ((2, 2, 2, 2), ResBlock)
+    config34 = ((3, 4, 6, 3), ResBlock)
+    config50 = ((3, 4, 6, 3), ResBottleneck)
+    config101 = ((3, 4, 23, 3), ResBottleneck)
+    config151 = ((3, 8, 36, 3), ResBottleneck)
+    model_A = build_model_A(config18)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
@@ -261,6 +265,7 @@ def build_model_A(config):
     )
 
     return model
+
 
 if __name__ == "__main__":
     main()
