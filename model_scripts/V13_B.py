@@ -146,7 +146,7 @@ def main():
     config50 = ((3, 4, 6, 3), ResBottleneck)
     config101 = ((3, 4, 23, 3), ResBottleneck)
     config151 = ((3, 8, 36, 3), ResBottleneck)
-    model_A = build_model_A(config101)
+    model_A = build_model_A(config151)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
@@ -168,7 +168,7 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    stop_early = EarlyStopping(monitor="val_loss", patience=5, verbose=1)
+    stop_early = EarlyStopping(monitor="val_loss", patience=10, verbose=1)
 
     def scheduler(epoch, lr):
         if epoch <= 4:
@@ -181,7 +181,7 @@ def test_model(model, model_name, train_ds, test_ds):
     plateau_callback = ReduceLROnPlateau(
         monitor="val_accuracy",
         factor=0.3,
-        patience=5,
+        patience=8,
         verbose=1,
         mode="auto",
         min_delta=0.1,
