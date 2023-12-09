@@ -168,12 +168,12 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    stop_early = EarlyStopping(monitor="val_loss", patience=10, verbose=1)
+    stop_early = EarlyStopping(monitor="val_loss", patience=15, verbose=1)
 
     def scheduler(epoch, lr):
-        if epoch <= 4:
+        if epoch <= 6:
             lr = lr
-        elif epoch % 4 == 0:
+        elif epoch % 6 == 0:
             lr = (lr * tf.math.exp(-0.35)).numpy()
         return lr
 
@@ -181,7 +181,7 @@ def test_model(model, model_name, train_ds, test_ds):
     plateau_callback = ReduceLROnPlateau(
         monitor="val_accuracy",
         factor=0.3,
-        patience=8,
+        patience=12,
         verbose=1,
         mode="auto",
         min_delta=0.1,
