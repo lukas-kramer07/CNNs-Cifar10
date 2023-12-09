@@ -203,7 +203,6 @@ def test_model(model, model_name, train_ds, test_ds):
         epochs=40,
         validation_data=test_ds,
         callbacks=[
-            stop_early,
             scheduler_callback,
             plateau_callback,
             checkpoint_callback,
