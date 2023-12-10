@@ -1,5 +1,5 @@
 """
-This script is a model version of the ResNet developed in V13_A
+This script is a model version of the ResNets developed in V13_A
 """
 import datetime
 import matplotlib.pyplot as plt
@@ -123,7 +123,7 @@ class ResBottleneck(Layer):
 
 
 def main():
-    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
+    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests a chosen ResNet model."""
     # load dataset
     (train_ds, test_ds), ds_info = tfds.load(
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
@@ -139,7 +139,7 @@ def main():
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 
-    # Test model A
+    # Test model A -> choose a ResNet config
     model_name = "V13_A"
     config18 = ((2, 2, 2, 2), ResBlock)
     config34 = ((3, 4, 6, 3), ResBlock)
