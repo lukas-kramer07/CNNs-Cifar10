@@ -40,7 +40,7 @@ def main():
     # load dataset
     (train_ds, test_ds), ds_info = tfds.load("cifar10", split=["train", "test"], as_supervised=True, with_info=True)
     # preprocess
-    train_ds, test_ds = preprocess_data(train_ds, test_ds)
+    train_ds, test_ds = preprocess_data(train_ds, test_ds, BATCH_SIZE)
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
     # define callbacks
@@ -126,15 +126,15 @@ def main():
 
 
 ## Preprocessing the dataset
-def preprocess_data(train_ds, test_ds):
+def preprocess_data(train_ds, test_ds, batch_size):
     AUTOTUNE = tf.data.experimental.AUTOTUNE
     train_ds_mixed = train_ds.map(resize_rescale)
     train_ds1 = train_ds_mixed.shuffle(buffer_size=32)
     train_ds2 = train_ds_mixed.shuffle(buffer_size=32)
     mixed_ds = tf.data.Dataset.zip((train_ds1, train_ds2))
-    train_ds = mixed_ds.map(cutmix, num_parallel_calls=AUTOTUNE).map(augment, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    train_ds = mixed_ds.map(cutmix, num_parallel_calls=AUTOTUNE).map(augment, num_parallel_calls=AUTOTUNE).batch(batch_size).prefetch(AUTOTUNE)
 
-    test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(BATCH_SIZE).prefetch(AUTOTUNE)
+    test_ds = test_ds.map(resize_rescale, num_parallel_calls=AUTOTUNE).batch(batch_size).prefetch(AUTOTUNE)
     return train_ds, test_ds
 
 
