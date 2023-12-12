@@ -53,7 +53,6 @@ class WarmUpCosineDecayScheduler(Callback):
         self.learning_rates.append(lr)
 
     def on_batch_begin(self, batch, logs=None):
-        print(self.params)
         total_steps = int(
             self.params["epochs"] * self.params["steps"]
         )
