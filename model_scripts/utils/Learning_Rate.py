@@ -53,11 +53,12 @@ class WarmUpCosineDecayScheduler(Callback):
         self.learning_rates.append(lr)
 
     def on_batch_begin(self, batch, logs=None):
+        print(self.params)
         total_steps = int(
-            self.params["epochs"] * self.params["samples"] / self.params["batch_size"]
+            self.params["epochs"] * self.params["steps"]
         )
         warmup_steps = int(
-            self.warmup_epoch * self.params["samples"] / self.params["batch_size"]
+            self.warmup_epoch * self.params["steps"]
         )
         lr = self.cosine_decay_with_warmup(
             global_step=self.global_step,
