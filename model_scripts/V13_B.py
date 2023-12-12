@@ -168,26 +168,7 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    stop_early = EarlyStopping(monitor="val_loss", patience=15, verbose=1)
-
-    def scheduler(epoch, lr):
-        if epoch <= 6:
-            lr = lr
-        elif epoch % 6 == 0:
-            lr = (lr * tf.math.exp(-0.35)).numpy()
-        return lr
-
-    scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
-    plateau_callback = ReduceLROnPlateau(
-        monitor="val_accuracy",
-        factor=0.3,
-        patience=12,
-        verbose=1,
-        mode="auto",
-        min_delta=0.1,
-        cooldown=0,
-        min_lr=0,
-    )
+    scheduler_callback = utils.WarmUpCosineDecayScheduler(learning_rate_base=0.01, total_steps = 60, warmup_steps=10, hold_base_rate_steps=5, verbose = 1)
     checkpoint_callback = ModelCheckpoint(
         f"model_checkpoints/training_checkpoints/{model_name}",
         monitor="val_loss",
@@ -200,11 +181,10 @@ def test_model(model, model_name, train_ds, test_ds):
     # train for 20 epochs
     history = model.fit(
         train_ds,
-        epochs=40,
+        epochs=60,
         validation_data=test_ds,
         callbacks=[
             scheduler_callback,
-            plateau_callback,
             checkpoint_callback,
             LRTensorBoard(log_dir=LOG_DIR),
         ],
