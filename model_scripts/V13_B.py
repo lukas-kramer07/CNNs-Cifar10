@@ -1,8 +1,7 @@
 """
-This script is a model version of the ResNet developed in V13_A
+This script is a model version of the ResNets developed in V13_A
 """
 import datetime
-
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_datasets as tfds
@@ -31,7 +30,7 @@ from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
 
 IM_SIZE = 32
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 class_names = [
     "airplane",
     "automobile",
@@ -45,11 +44,19 @@ class_names = [
     "truck",
 ]
 
+
+# TODO: Check for improved architecture
 class ResBlock(Layer):
-    def __init__(self, channels, stride=1, name="res_block"):
+    def __init__(self, channels, stride=1, name="res_block", cut="pre"):
         super(ResBlock, self).__init__(name=name)
 
-        self.res_conv = stride != 1
+        # defining shortcut connection
+        if cut == "pre":
+            self.res_conv = False
+        elif cut == "post":
+            self.res_conv = True
+        else:
+            raise ValueError('Cut type not in ["pre", "post"]')
         self.conv1 = Conv2D(
             filters=channels, kernel_size=3, strides=stride, padding="same"
         )
@@ -75,21 +82,71 @@ class ResBlock(Layer):
         return self.relu(result)
 
 
+class ResBottleneck(Layer):
+    def __init__(self, channels, stride=1, name="res_bottleneck_block", cut="pre"):
+        super(ResBottleneck, self).__init__(name=name)
+
+        # defining shortcut connection
+        if cut == "pre":
+            self.res_conv = False
+        elif cut == "post":
+            self.res_conv = True
+        else:
+            raise ValueError('Cut type not in ["pre", "post"]')
+        self.conv1 = Conv2D(filters=channels, kernel_size=1, padding="same")
+        self.norm1 = BatchNormalization()
+
+        self.conv2 = Conv2D(
+            filters=channels, kernel_size=3, strides=stride, padding="same"
+        )
+        self.norm2 = BatchNormalization()
+
+        self.conv3 = Conv2D(filters=channels * 4, kernel_size=1, padding="same")
+        self.norm3 = BatchNormalization()
+        self.relu = ReLU()
+        if self.res_conv:
+            self.conv4 = Conv2D(filters=channels * 4, kernel_size=1, strides=stride)
+
+    def call(self, input, training):
+        x = self.conv1(input)
+        x = self.norm1(x, training)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.norm2(x, training)
+        x = self.relu(x)
+        x = self.conv3(x)
+        if self.res_conv:
+            input = self.conv4(input)
+        result = Add()([x, input])
+        result = self.norm3(result, training)
+        return self.relu(result)
+
+
 def main():
-    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests all V12 models."""
+    """main function that uses preprocess_data and visualize_data from V11_E to prepare the dataset. It then tests a chosen ResNet model."""
     # load dataset
     (train_ds, test_ds), ds_info = tfds.load(
         "cifar10", split=["train", "test"], as_supervised=True, with_info=True
     )
     # preprocess
-    train_ds, test_ds = utils.preprocess_data(train_ds, test_ds, batch_size=BATCH_SIZE, IM_SIZE=IM_SIZE, class_names=class_names)
+    train_ds, test_ds = utils.preprocess_data(
+        train_ds,
+        test_ds,
+        batch_size=BATCH_SIZE,
+        IM_SIZE=IM_SIZE,
+        class_names=class_names,
+    )
     # visualize new data
     visualize_data(train_ds=train_ds, test_ds=test_ds, ds_info=ds_info)
 
-    # Test model A
+    # Test model A -> choose a ResNet config
     model_name = "V13_A"
-    config = [3, 4, 6, 3] #ResNet34
-    model_A = build_model_A(config)
+    config18 = ((2, 2, 2, 2), ResBlock)
+    config34 = ((3, 4, 6, 3), ResBlock)
+    config50 = ((3, 4, 6, 3), ResBottleneck)
+    config101 = ((3, 4, 23, 3), ResBottleneck)
+    config151 = ((3, 8, 36, 3), ResBottleneck)
+    model_A = build_model_A(config151)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
@@ -111,20 +168,20 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    stop_early = EarlyStopping(monitor="val_loss", patience=4, verbose=1)
+    stop_early = EarlyStopping(monitor="val_loss", patience=15, verbose=1)
 
     def scheduler(epoch, lr):
-        if epoch <= 3:
+        if epoch <= 6:
             lr = lr
-        elif epoch % 3 == 0:
+        elif epoch % 6 == 0:
             lr = (lr * tf.math.exp(-0.35)).numpy()
         return lr
 
     scheduler_callback = LearningRateScheduler(scheduler, verbose=1)
     plateau_callback = ReduceLROnPlateau(
         monitor="val_accuracy",
-        factor=0.1,
-        patience=7,
+        factor=0.3,
+        patience=12,
         verbose=1,
         mode="auto",
         min_delta=0.1,
@@ -146,7 +203,6 @@ def test_model(model, model_name, train_ds, test_ds):
         epochs=40,
         validation_data=test_ds,
         callbacks=[
-            stop_early,
             scheduler_callback,
             plateau_callback,
             checkpoint_callback,
@@ -165,6 +221,7 @@ def test_model(model, model_name, train_ds, test_ds):
 
 
 def build_model_A(config):
+    reslayer_config, ResBlock = config
     model = tf.keras.Sequential()
 
     # Input block
@@ -183,15 +240,19 @@ def build_model_A(config):
     model.add(MaxPool2D(pool_size=2, strides=2))
 
     # Residual blocks
-    for reps, groups in enumerate(config):
+    for reps, groups in enumerate(reslayer_config):
         for n in range(groups):
             channels = 64 * (2**reps)
             if n == 0 and reps == 0:
-                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-1"))
+                model.add(ResBlock(channels, cut="post", name=f"res_cell-{reps}-{n}-1"))
             elif n == 0:
-                model.add(ResBlock(channels, stride=2, name=f"res_cell-{reps}-{n}-1"))
+                model.add(
+                    ResBlock(
+                        channels, stride=2, cut="post", name=f"res_cell-{reps}-{n}-1"
+                    )
+                )
             else:
-                model.add(ResBlock(channels, name=f"res_cell-{reps}-{n}-2"))
+                model.add(ResBlock(channels, cut="pre", name=f"res_cell-{reps}-{n}-2"))
 
     model.add(GlobalAveragePooling2D())
     model.add(Dense(10, activation="softmax"))

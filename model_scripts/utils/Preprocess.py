@@ -29,7 +29,12 @@ def create_transform(IM_SIZE):
             # 'mechanical' transformations
             A.HorizontalFlip(p=0.5),
             A.ShiftScaleRotate(
-                shift_limit=0.2, scale_limit=0.15, rotate_limit=20, shift_limit_x=0.15, shift_limit_y=0.15,p=0.75
+                shift_limit=0.2,
+                scale_limit=0.15,
+                rotate_limit=20,
+                shift_limit_x=0.15,
+                shift_limit_y=0.15,
+                p=0.75,
             ),
         ]
     )
