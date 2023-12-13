@@ -146,7 +146,7 @@ def main():
     config50 = ((3, 4, 6, 3), ResBottleneck)
     config101 = ((3, 4, 23, 3), ResBottleneck)
     config151 = ((3, 8, 36, 3), ResBottleneck)
-    model_A = build_model_A(config151)
+    model_A = build_model_A(config34)
     print("Model_A test starting:")
     test_model(model=model_A, model_name=model_name, train_ds=train_ds, test_ds=test_ds)
 
@@ -168,7 +168,7 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    scheduler_callback = utils.WarmUpCosineDecayScheduler(learning_rate_base=0.01, total_steps = 60, warmup_steps=10, hold_base_rate_steps=5, verbose = 1)
+    scheduler_callback = utils.WarmUpCosineDecayScheduler(learning_rate_base=0.01, warmup_epoch=10, hold_base_rate_steps=5, verbose = 1)
     checkpoint_callback = ModelCheckpoint(
         f"model_checkpoints/training_checkpoints/{model_name}",
         monitor="val_loss",
