@@ -2,7 +2,7 @@
 
 import numpy as np
 from keras import backend as K
-from keras.callbacks import Callback, LearningRateScheduler, TensorBoard
+from keras.callbacks import Callback
 
 
 class WarmUpCosineDecayScheduler(Callback):
