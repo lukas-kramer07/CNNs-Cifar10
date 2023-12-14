@@ -236,9 +236,9 @@ def visualize_data(train_ds, test_ds, ds_info):
             plt.axis("off")
     plt.tight_layout(w_pad=6, h_pad=4)
     plt.suptitle("Train and Test Samples", fontsize=14)
-    #plt.show()
+    plt.show()
 
 
 if __name__ == "__main__":
     main()
-    # plt.show()
+    plt.show()

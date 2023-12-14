@@ -24,6 +24,7 @@ from keras.layers import (
     Layer,
     GlobalAveragePooling2D,
     Add,
+    ReLU
 )
 from keras.optimizers import Adam
 from keras.losses import CategoricalCrossentropy
