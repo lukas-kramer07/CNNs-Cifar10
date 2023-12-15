@@ -31,10 +31,10 @@ def create_transform(IM_SIZE):
             A.ShiftScaleRotate(
                 shift_limit=0.2,
                 scale_limit=0.15,
-                rotate_limit=20,
-                shift_limit_x=0.15,
-                shift_limit_y=0.15,
-                p=0.75,
+                rotate_limit=21,
+                shift_limit_x=0.18,
+                shift_limit_y=0.18,
+                p=0.8,
             ),
         ]
     )

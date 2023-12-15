@@ -168,7 +168,7 @@ def test_model(model, model_name, train_ds, test_ds):
             logs.update({"lr": K.eval(self.model.optimizer.lr)})
             super().on_epoch_end(epoch, logs)
 
-    scheduler_callback = utils.WarmUpCosineDecayScheduler(learning_rate_base=0.01, warmup_epoch=10, hold_base_rate_steps=5, verbose = 1)
+    scheduler_callback = utils.WarmUpCosineDecayScheduler(learning_rate_base=0.01, warmup_epoch=15, hold_base_rate_steps=5, verbose = 1)
     checkpoint_callback = ModelCheckpoint(
         f"model_checkpoints/training_checkpoints/{model_name}",
         monitor="val_loss",
@@ -181,7 +181,7 @@ def test_model(model, model_name, train_ds, test_ds):
     # train for 20 epochs
     history = model.fit(
         train_ds,
-        epochs=60,
+        epochs=80,
         validation_data=test_ds,
         callbacks=[
             scheduler_callback,
