@@ -8,7 +8,7 @@ This project demonstrates the development of CNN models for image classification
 
 ## Features
 
-- Multiple CNN model versions (V0 to V7) with varying architectures and data augmentation strategies.
+- V0: Base MLP model
 - Code for data augmentation to enhance the model's performance.
 - Visualizations of training history and confusion matrices to evaluate model performance.
 - Detailed documentation and comments for clarity and ease of understanding.
