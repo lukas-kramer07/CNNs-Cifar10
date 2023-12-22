@@ -23,7 +23,7 @@ This project demonstrates the development of CNN models for image classification
 - V10: Tensorboard 
 - V11: variety of augmentation techniques (tf.image, custom layer, mixup, cutmix, Alubmentation)
 - V12: hp search (grid, random, keras tuner)
-- V13: 
+- V13: Res-Net model architecture for over 90 percent test acc
 
 ## Technologies Used
 
