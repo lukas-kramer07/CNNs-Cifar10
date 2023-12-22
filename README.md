@@ -7,16 +7,23 @@ Welcome to the CNN-Cifar 10 project! This project showcases various versions of 
 This project demonstrates the development of CNN models for image classification using the Cifar 10 dataset. The models are organized into versions (V0 to V7), each with its unique characteristics and improvements. You can explore different model architectures and training strategies by analyzing the code and running experiments.
 
 ## Features
-- V0-V7 use keras.datasets while V8-V13 use tfds 
+- V0-V7 use keras.datasets
 - V0: Base MLP model
 - V1: First CNN model
 - V2: Bigger model architecture than V1
 - V3: use pre-training data augmentation
 - V4: use complexer pre-training data augmentation than V3
-- Code for data augmentation to enhance the model's performance.
-- Visualizations of training history and confusion matrices to evaluate model performance.
-- Detailed documentation and comments for clarity and ease of understanding.
-- Organized project structure with folders for utilities, models, and plots.
+- V5: use online data augmentation
+- V6: further increase model architecture complexity
+- V7: introduce a lr decayer
+
+- V8-V13 use tfds 
+- V8: base model for tfds (V2 architecture)
+- V9: more callbacks (plateau, early-stopping, checkpoint)
+- V10: Tensorboard 
+- V11: variety of augmentation techniques (tf.image, custom layer, mixup, cutmix, Alubmentation)
+- V12: hp search (grid, random, keras tuner)
+- V13: 
 
 ## Technologies Used
 
